@@ -161,11 +161,11 @@ html[lang=kn] .name .en,html[lang=en] .name .kn{display:none}
 <section class="deep" id="join"><div class="wrap join">
   <div><span class="eyebrow"><span class="en">Join</span><span class="kn">ಸೇರಿ</span></span><h2 class="t"><span class="en">Be part of what comes next.</span><span class="kn">ಮುಂದಿನ ಹೆಜ್ಜೆಯಲ್ಲಿ ನೀವೂ ಜೊತೆಯಾಗಿ.</span></h2>
     <div class="count" id="sc2">0</div><p class="lead"><span class="en">people have already joined the movement.</span><span class="kn">ಜನರು ಈಗಾಗಲೇ ಅಭಿಯಾನಕ್ಕೆ ಸೇರಿದ್ದಾರೆ.</span></p><a class="btn" href="/share" style="color:var(--on);border-color:rgba(246,196,83,.7)"><span class="en">Create your support card</span><span class="kn">ನಿಮ್ಮ ಬೆಂಬಲ ಕಾರ್ಡ್ ರಚಿಸಿ</span></a></div>
-  <form class="frm" id="sf"><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <label class="f"><span class="en">Your name</span><span class="kn">ನಿಮ್ಮ ಹೆಸರು</span><input name="name" required minlength="2" maxlength="100" autocomplete="name"></label>
-    <label class="f"><span class="en">Phone number</span><span class="kn">ಫೋನ್ ಸಂಖ್ಯೆ</span><input name="phone" required type="tel" minlength="7" maxlength="30" autocomplete="tel"></label>
+  <form class="frm" id="sf" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="f"><span class="en">Your name</span><span class="kn">ನಿಮ್ಮ ಹೆಸರು</span><input name="name" data-v="name" maxlength="100" autocomplete="name"></label>
+    <label class="f"><span class="en">Mobile number (10 digits)</span><span class="kn">ಮೊಬೈಲ್ ಸಂಖ್ಯೆ (10 ಅಂಕಿ)</span><input name="phone" data-v="phone" type="tel" autocomplete="tel"></label>
     <label class="f"><span class="en">Your area or ward</span><span class="kn">ನಿಮ್ಮ ಪ್ರದೇಶ ಅಥವಾ ವಾರ್ಡ್</span><input name="area" maxlength="160"></label>
-    <label class="chk"><input type="checkbox" name="ok" required><span><span class="en">I agree to the <a href="/privacy">privacy policy</a> and to be contacted about this movement.</span><span class="kn">ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಮತ್ತು ಈ ಅಭಿಯಾನದ ಬಗ್ಗೆ ಸಂಪರ್ಕಿಸಲು ಒಪ್ಪುತ್ತೇನೆ.</span></span></label>
+    <label class="chk"><input type="checkbox" name="ok" data-v="check"><span><span class="en">I agree to the <a href="/privacy">privacy policy</a> and to be contacted about this movement.</span><span class="kn">ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಮತ್ತು ಈ ಅಭಿಯಾನದ ಬಗ್ಗೆ ಸಂಪರ್ಕಿಸಲು ಒಪ್ಪುತ್ತೇನೆ.</span></span></label>
     <button class="btn main" type="submit"><span class="en">Join now</span><span class="kn">ಈಗ ಸೇರಿ</span></button>
   </form>
 </div></section>
@@ -173,13 +173,13 @@ html[lang=kn] .name .en,html[lang=en] .name .kn{display:none}
 <section id="contact"><div class="wrap join">
   <div><span class="eyebrow"><span class="en">Contact</span><span class="kn">ಸಂಪರ್ಕ</span></span><h2 class="t"><span class="en">Write to us</span><span class="kn">ನಮಗೆ ಬರೆಯಿರಿ</span></h2>
     <div id="ci" class="lead"></div></div>
-  <form class="frm two" id="cf"><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <label class="f"><span class="en">Name</span><span class="kn">ಹೆಸರು</span><input name="name" required maxlength="100"></label>
-    <label class="f"><span class="en">Phone</span><span class="kn">ಫೋನ್</span><input name="phone" type="tel" maxlength="30"></label>
-    <label class="f full"><span class="en">Email</span><span class="kn">ಇಮೇಲ್</span><input name="email" type="email" maxlength="254"></label>
+  <form class="frm two" id="cf" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="f"><span class="en">Name</span><span class="kn">ಹೆಸರು</span><input name="name" data-v="name" maxlength="100"></label>
+    <label class="f"><span class="en">Mobile (10 digits)</span><span class="kn">ಮೊಬೈಲ್ (10 ಅಂಕಿ)</span><input name="phone" data-v="phone" data-opt type="tel"></label>
+    <label class="f full"><span class="en">Email</span><span class="kn">ಇಮೇಲ್</span><input name="email" data-v="email" data-opt maxlength="254"></label>
     <label class="f full"><span class="en">Subject</span><span class="kn">ವಿಷಯ</span><input name="subject" maxlength="160"></label>
-    <label class="f full"><span class="en">Message</span><span class="kn">ಸಂದೇಶ</span><textarea name="message" rows="4" required minlength="5" maxlength="5000"></textarea></label>
-    <label class="chk full"><input type="checkbox" required><span><span class="en">I agree to the <a href="/privacy">privacy policy</a>.</span><span class="kn">ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></span></label>
+    <label class="f full"><span class="en">Message</span><span class="kn">ಸಂದೇಶ</span><textarea name="message" rows="4" data-v="min" data-min="5" maxlength="5000"></textarea></label>
+    <label class="chk full"><input type="checkbox" data-v="check"><span><span class="en">I agree to the <a href="/privacy">privacy policy</a>.</span><span class="kn">ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></span></label>
     <button class="btn main full" type="submit"><span class="en">Send message</span><span class="kn">ಸಂದೇಶ ಕಳುಹಿಸಿ</span></button>
   </form>
 </div></section>

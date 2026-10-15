@@ -73,3 +73,32 @@ window.askText=function(title,msg,ph,type){return ask({title:title,msg:msg,input
 window.busy=function(b,on){if(!b)return;b.classList.toggle('busy',!!on);b.disabled=!!on};
 window.hideLoader=function(){var l=document.getElementById('ldr');if(l){l.classList.add('done');setTimeout(function(){l.remove()},800)}};
 })();
+(function(){
+window.PV='2026-10';
+var MSG={phone:['Enter a valid 10-digit mobile number (digits only).','ಮಾನ್ಯ 10 ಅಂಕಿಗಳ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ (ಅಂಕೆಗಳು ಮಾತ್ರ).'],email:['Enter a valid email address.','ಮಾನ್ಯ ಇಮೇಲ್ ವಿಳಾಸ ನಮೂದಿಸಿ.'],name:['Enter a valid name (letters only, at least 2 characters).','ಮಾನ್ಯ ಹೆಸರು ನಮೂದಿಸಿ (ಅಕ್ಷರಗಳು ಮಾತ್ರ, ಕನಿಷ್ಠ 2).'],req:['This field is required.','ಈ ಕ್ಷೇತ್ರ ಅಗತ್ಯ.'],check:['Please accept the privacy policy to continue.','ಮುಂದುವರಿಯಲು ಗೌಪ್ಯತಾ ನೀತಿಗೆ ಒಪ್ಪಿಗೆ ನೀಡಿ.'],min:['Please write a little more.','ದಯವಿಟ್ಟು ಇನ್ನಷ್ಟು ವಿವರಿಸಿ.'],pw:['Use at least 10 characters, with letters and numbers.','ಕನಿಷ್ಠ 10 ಅಕ್ಷರಗಳು, ಅಕ್ಷರ ಮತ್ತು ಸಂಖ್ಯೆ ಬಳಸಿ.']};
+window.V={
+ phone:function(v){var d=String(v||'').replace(/\D/g,'');if(d.length===12&&d.indexOf('91')===0)d=d.slice(2);if(d.length===11&&d[0]==='0')d=d.slice(1);return d},
+ isPhone:function(d){return /^[6-9][0-9]{9}$/.test(d)},
+ isEmail:function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)&&v.length<=254},
+ isName:function(v){v=(v||'').trim();return v.length>=2&&v.length<=100&&!/[0-9<>@#$%^*=+|~_{}]/.test(v)},
+ isPw:function(v){return v.length>=10&&/[A-Za-z]/.test(v)&&/[0-9]/.test(v)},
+ err:function(inp,k){var n=inp.closest('label,.fld')||inp.parentNode,e=n.querySelector('.ferr');if(!e){e=el('small','ferr');n.append(e)}e.replaceChildren();
+  if(k){e.append(bi(MSG[k][0],MSG[k][1]));inp.classList.add('invalid');inp.setAttribute('aria-invalid','true')}else{inp.classList.remove('invalid');inp.removeAttribute('aria-invalid')}},
+ check:function(form){var ok=true,first=null;$$('[data-v]',form).forEach(function(i){var t=i.dataset.v,v=i.type==='checkbox'?i.checked:(i.value||'').trim(),opt=i.hasAttribute('data-opt'),k=null;
+   if(t==='check'){if(!v)k='check'}else if(!v){if(!opt)k='req'}
+   else if(t==='phone'){var d=V.phone(v);if(!V.isPhone(d))k='phone';else{i.value=d;i.dispatchEvent(new Event('input',{bubbles:true}))}}
+   else if(t==='email'){if(!V.isEmail(v))k='email'}else if(t==='name'){if(!V.isName(v))k='name'}else if(t==='pw'){if(!V.isPw(i.value))k='pw'}else if(t==='min'){if(v.length<(+i.dataset.min||5))k='min'}
+   V.err(i,k);if(k){ok=false;if(!first)first=i}});if(first)try{first.focus()}catch(e){}return ok},
+ init:function(root){$$('[data-v=phone]',root).forEach(function(i){i.setAttribute('inputmode','numeric');i.setAttribute('maxlength','20');i.setAttribute('autocomplete','tel-national');i.addEventListener('input',function(){var d=V.phone(i.value);if(i.value!==d.slice(0,10))i.value=d.slice(0,10)})});
+  $$('[data-v]',root).forEach(function(i){var c=function(){V.err(i,null)};i.addEventListener('input',c);i.addEventListener('change',c)})}
+};
+var _fe=window.fe;window.fe=function(e){var m=(e&&(e.message||e.msg))||'',c=e&&e.code;
+  if(/sold out|ticket\(s\) are left|accept the privacy|sign in to book|valid 10-digit/i.test(m))return m;
+  if(c==='23514'||/violates check constraint/i.test(m))return 'Please check the details you entered. Phone numbers must be exactly 10 digits.';
+  return _fe(e)};
+window.consentBanner=function(){try{if(localStorage.getItem('pp')===PV)return}catch(e){return}if(/^\/(admin|privacy)/.test(location.pathname)||document.querySelector('.cbn'))return;
+  var b=el('div','cbn'),t=el('div','cbt'),a=el('a'),ok=el('button','btn main sm');a.href='/privacy';a.append(bi('Read our privacy policy','ಗೌಪ್ಯತಾ ನೀತಿ ಓದಿ'));
+  t.append(bi('We use only essential storage (your language and sign-in). We collect personal details only when you submit a form. ','ನಾವು ಅಗತ್ಯ ಸಂಗ್ರಹಣೆ ಮಾತ್ರ ಬಳಸುತ್ತೇವೆ (ಭಾಷೆ ಮತ್ತು ಲಾಗಿನ್). ನೀವು ಫಾರ್ಮ್ ಸಲ್ಲಿಸಿದಾಗ ಮಾತ್ರ ವೈಯಕ್ತಿಕ ವಿವರ ಸಂಗ್ರಹಿಸುತ್ತೇವೆ. '),a);ok.append(bi('I understand','ಅರ್ಥವಾಯಿತು'));
+  ok.onclick=function(){try{localStorage.setItem('pp',PV)}catch(e){}b.remove()};b.append(t,ok);document.body.append(b)};
+var _h=window.hideLoader;window.hideLoader=function(){_h();setTimeout(window.consentBanner,1200)};
+})();

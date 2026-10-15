@@ -45,5 +45,5 @@ async function png(){
   x.textAlign='center';x.fillStyle='#1F1611';x.font='800 40px '+F;x.fillText(T.code,540,cy+qs+120);x.fillStyle='#6A5D52';x.font='500 26px '+F;x.fillText('Show this QR at the entrance · ಪ್ರವೇಶದ್ವಾರದಲ್ಲಿ ತೋರಿಸಿ',540,1540);x.restore();
   return new Promise(function(res){c.toBlob(res,'image/png')})}
 (async function(){
-  if(code.length===14){var r=await sb.rpc('get_ticket',{p_code:code});T=r.data||null}
-  render();hideLoader();logVisit()})();
+  var fail=false;if(code.length===14){var r=await sb.rpc('get_ticket',{p_code:code});if(r.error)fail=true;T=r.data||null}
+  render();if(fail){var rt=el('div','acts'),bt=el('button','btn main');bt.append(bi('Try again','ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ'));bt.onclick=function(){location.reload()};rt.append(bt);app.append(rt);toast("Couldn't load the ticket. Check your connection and try again.",1)}hideLoader();logVisit()})();

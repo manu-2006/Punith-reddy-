@@ -5,30 +5,35 @@ function chip(s){var c=ST[s]||[s,s,''],e=el('span','chip '+c[2]);e.append(bi(c[0
 function F(l,kn,html){return '<label class="f"><span>'+l+' / '+kn+'</span>'+html+'</label>'}
 function panel(){var p=el('div','panel');for(var i=0;i<arguments.length;i++)p.append(arguments[i]);return p}
 function auth(){
-  app.replaceChildren();var box=el('div','auth'),p=el('div','panel'),t=el('div','tabs'),f=el('form','frm'),err=el('div','err');
+  app.replaceChildren();var box=el('div','auth'),p=el('div','panel'),t=el('div','tabs'),f=el('form','frm'),err=el('div','err');f.noValidate=true;var fails=window.__fails||0;
   [['in','Sign in','ಲಾಗಿನ್'],['up','Create account','ಖಾತೆ ರಚಿಸಿ']].forEach(function(x){var b=el('button',mode===x[0]?'on':'');b.type='button';b.append(bi(x[1],x[2]));b.onclick=function(){mode=x[0];auth()};t.append(b)});
-  if(recovery){f.innerHTML=F('New password','ಹೊಸ ಪಾಸ್‌ವರ್ಡ್','<input name="pw" type="password" minlength="8" required autocomplete="new-password">')+'<button class="btn main">Save password · ಉಳಿಸಿ</button>';
-    f.onsubmit=async function(e){e.preventDefault();var r=await sb.auth.updateUser({password:new FormData(f).get('pw')});if(r.error)err.textContent=fe(r.error);else{recovery=false;toast('Password updated');boot()}};}
+  if(recovery){f.innerHTML=F('New password','ಹೊಸ ಪಾಸ್‌ವರ್ಡ್','<input name="pw" type="password" data-v="pw" autocomplete="new-password">')+'<button class="btn main">Save password · ಉಳಿಸಿ</button>';
+    f.onsubmit=async function(e){e.preventDefault();if(!V.check(f))return;var r=await sb.auth.updateUser({password:new FormData(f).get('pw')});if(r.error)err.textContent=fe(r.error);else{recovery=false;toast('Password updated');boot()}};}
   else{
-    f.innerHTML=(mode==='up'?F('Full name','ಪೂರ್ಣ ಹೆಸರು','<input name="name" required minlength="2" maxlength="100" autocomplete="name">')+F('Phone','ಫೋನ್','<input name="phone" type="tel" required minlength="7" maxlength="30" autocomplete="tel">')+F('Area or ward','ಪ್ರದೇಶ ಅಥವಾ ವಾರ್ಡ್','<input name="area" maxlength="160">'):'')+
-      F('Email','ಇಮೇಲ್','<input name="email" type="email" required autocomplete="email">')+F('Password','ಪಾಸ್‌ವರ್ಡ್','<input name="pw" type="password" required minlength="8" autocomplete="'+(mode==='up'?'new':'current')+'-password">')+
-      (mode==='up'?'<label class="chk"><input type="checkbox" required><span>I agree to the <a href="/privacy">privacy policy</a>. / ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label>':'')+
+    f.innerHTML=(mode==='up'?F('Full name','ಪೂರ್ಣ ಹೆಸರು','<input name="name" data-v="name" maxlength="100" autocomplete="name">')+F('Mobile (10 digits)','ಮೊಬೈಲ್ (10 ಅಂಕಿ)','<input name="phone" type="tel" data-v="phone" autocomplete="tel">')+F('Area or ward','ಪ್ರದೇಶ ಅಥವಾ ವಾರ್ಡ್','<input name="area" maxlength="160">'):'')+
+      F('Email','ಇಮೇಲ್','<input name="email" data-v="email" autocomplete="email">')+F('Password','ಪಾಸ್‌ವರ್ಡ್','<input name="pw" type="password" '+(mode==='up'?'data-v="pw"':'required')+' autocomplete="'+(mode==='up'?'new':'current')+'-password">')+
+      (mode==='up'?'<label class="chk"><input type="checkbox" data-v="check"><span>I agree to the <a href="/privacy">privacy policy</a>. / ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label>':'')+
       '<button class="btn main">'+(mode==='up'?'Create account · ಖಾತೆ ರಚಿಸಿ':'Sign in · ಲಾಗಿನ್')+'</button>'+(mode==='in'?'<button type="button" class="link" id="fp">Forgot password? · ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?</button>':'');
-    f.onsubmit=async function(e){e.preventDefault();err.textContent='';var d=new FormData(f),r;
-      if(mode==='up'){r=await sb.auth.signUp({email:d.get('email'),password:d.get('pw'),options:{data:{full_name:d.get('name'),phone:d.get('phone'),area:d.get('area')||''},emailRedirectTo:location.origin+'/citizen'}});
+    f.onsubmit=async function(e){e.preventDefault();err.textContent='';if(!V.check(f))return;var d=new FormData(f),r;
+      if(mode==='up'){r=await sb.auth.signUp({email:d.get('email'),password:d.get('pw'),options:{data:{full_name:d.get('name').trim(),phone:V.phone(d.get('phone')),area:d.get('area')||'',privacy_version:PV},emailRedirectTo:location.origin+'/citizen'}});
         if(r.error)err.textContent=fe(r.error);else if(!r.data.session){err.style.color='var(--green2)';err.textContent='Check your email to confirm your account. / ಖಾತೆ ದೃಢೀಕರಿಸಲು ನಿಮ್ಮ ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ.'}}
-      else{r=await sb.auth.signInWithPassword({email:d.get('email'),password:d.get('pw')});if(r.error)err.textContent=fe(r.error)}};
+      else{if(Date.now()<(window.__lock||0)){err.textContent='Too many attempts. Please wait a minute and try again.';return}r=await sb.auth.signInWithPassword({email:d.get('email').trim(),password:d.get('pw')});if(r.error){window.__fails=(window.__fails||0)+1;if(window.__fails>=5){window.__lock=Date.now()+60000;window.__fails=0}err.textContent=fe(r.error)}else window.__fails=0}};
     setTimeout(function(){var fp=$('#fp');if(fp)fp.onclick=async function(){var em=await askText('Reset your password','Enter your email and we will send you a reset link.','you@example.com','email');if(!em)return;var r=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+'/citizen'});toast(r.error?fe(r.error):'Reset link sent / ಲಿಂಕ್ ಕಳುಹಿಸಲಾಗಿದೆ',!!r.error)}});
   }
-  p.append(recovery?el('h3','','Set a new password'):t,f,err);box.append(p);app.append(box);
+  V.init(f);p.append(recovery?el('h3','','Set a new password'):t,f,err);box.append(p);app.append(box);
 }
+function consentModal(){return new Promise(function(res){var d=el('div','ask'),cb=el('input'),lb=el('label','chk'),ok=el('button','btn main'),a=el('a'),sp=el('span'),done=false,close;cb.type='checkbox';
+  sp.append(bi('I have read and accept the Privacy Policy','ನಾನು ಗೌಪ್ಯತಾ ನೀತಿಯನ್ನು ಓದಿ ಒಪ್ಪಿದ್ದೇನೆ'));lb.append(cb,sp);a.href='/privacy';a.target='_blank';a.append(bi('Read the privacy policy','ಗೌಪ್ಯತಾ ನೀತಿ ಓದಿ'));ok.append(bi('Accept and continue','ಒಪ್ಪಿ ಮುಂದುವರಿಯಿರಿ'));
+  d.append(el('div','aic','🔒'),el('h3','','Privacy policy'),el('p','','Please confirm that you accept our privacy policy to keep using your account. / ನಿಮ್ಮ ಖಾತೆ ಬಳಸಲು ಗೌಪ್ಯತಾ ನೀತಿಗೆ ಒಪ್ಪಿಗೆ ನೀಡಿ.'),a,lb,ok);
+  close=openModal(d,'askbox',function(){if(!done){done=true;res(false)}});
+  ok.onclick=async function(){if(!cb.checked){toast('Please tick the box to accept.',1);return}busy(ok,1);var r=await sb.from('profiles').update({privacy_version:PV,privacy_accepted_at:new Date().toISOString()}).eq('id',me.id);busy(ok,0);if(r.error){toast(fe(r.error),1);return}prof.privacy_version=PV;done=true;res(true);close()}})}
 async function dash(){
   var uid=me.id,P=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();prof=P.data||{};
   var md=me.user_metadata||{};if(!prof.phone&&md.phone){await sb.from('profiles').update({phone:md.phone,area:md.area||null}).eq('id',uid);prof.phone=md.phone;prof.area=md.area}
   var R=await Promise.all([sb.from('grievances').select('*').eq('user_id',uid).order('created_at',{ascending:false}),sb.from('appointment_requests').select('*').eq('user_id',uid).order('created_at',{ascending:false}),sb.from('event_rsvps').select('*,events(title_en,title_kn,starts_at)').eq('user_id',uid).order('created_at',{ascending:false})]);
   var G=R[0].data||[],A=R[1].data||[],V=R[2].data||[];
   app.replaceChildren();
-  var staff=['admin','editor','moderator'].indexOf(prof.role)>-1;
+  if(prof.privacy_version!==PV)consentModal();var staff=['admin','editor','moderator'].indexOf(prof.role)>-1;
   var hi=el('div','panel');hi.style.display='flex';hi.style.justifyContent='space-between';hi.style.flexWrap='wrap';hi.style.gap='12px';hi.style.alignItems='center';
   var w=el('div');w.append(bi('Welcome, '+(prof.full_name||me.email),'ಸ್ವಾಗತ, '+(prof.full_name||me.email)));w.style.fontWeight='700';w.style.fontSize='1.2rem';
   var so=el('button','btn sm');so.append(bi('Sign out','ಲಾಗ್ ಔಟ್'));so.onclick=function(){sb.auth.signOut()};var rt=el('div');rt.style.display='flex';rt.style.gap='10px';
@@ -38,20 +43,20 @@ async function dash(){
   /* forms */
   var fp=panel(),tt=el('div','tabs'),form=el('form','frm'),kind=location.hash==='#appointment'?'a':'g';
   function drawForm(){tt.replaceChildren();[['g','Report an issue','ಸಮಸ್ಯೆ ವರದಿ'],['a','Request a meeting','ಭೇಟಿ ಕೋರಿ']].forEach(function(x){var b=el('button',kind===x[0]?'on':'');b.type='button';b.append(bi(x[1],x[2]));b.onclick=function(){kind=x[0];drawForm()};tt.append(b)});
-    form.innerHTML=kind==='g'?F('Category','ವರ್ಗ','<select name="category"><option>Roads</option><option>Water</option><option>Electricity</option><option>Sanitation</option><option>Education</option><option>Health</option><option>Other</option></select>')+F('Subject','ವಿಷಯ','<input name="subject" required maxlength="160">')+F('Describe the issue','ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ','<textarea name="message" rows="5" required minlength="5" maxlength="5000"></textarea>')+'<button class="btn main">Submit · ಸಲ್ಲಿಸಿ</button>'
-      :F('Preferred date','ಆದ್ಯತೆಯ ದಿನಾಂಕ','<input name="date" type="date" min="'+new Date().toISOString().slice(0,10)+'">')+F('Preferred time','ಆದ್ಯತೆಯ ಸಮಯ','<input name="time" placeholder="e.g. 11 AM">')+F('Purpose','ಉದ್ದೇಶ','<input name="purpose" required minlength="2" maxlength="160">')+F('Details','ವಿವರ','<textarea name="message" rows="4" maxlength="4000"></textarea>')+'<button class="btn main">Request · ಕೋರಿಕೆ ಸಲ್ಲಿಸಿ</button>'}
-  form.onsubmit=async function(e){e.preventDefault();var d=new FormData(form),b=$('button:last-child',form),r;b.disabled=true;
+    form.innerHTML=kind==='g'?F('Category','ವರ್ಗ','<select name="category"><option>Roads</option><option>Water</option><option>Electricity</option><option>Sanitation</option><option>Education</option><option>Health</option><option>Other</option></select>')+F('Subject','ವಿಷಯ','<input name="subject" data-v="min" data-min="3" maxlength="160">')+F('Describe the issue','ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ','<textarea name="message" rows="5" data-v="min" data-min="10" maxlength="5000"></textarea>')+'<label class="chk"><input type="checkbox" data-v="check"><span>I agree to the <a href="/privacy" target="_blank">privacy policy</a>. / ನಾನು <a href="/privacy" target="_blank">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label><button class="btn main">Submit · ಸಲ್ಲಿಸಿ</button>'
+      :F('Preferred date','ಆದ್ಯತೆಯ ದಿನಾಂಕ','<input name="date" type="date" min="'+new Date().toISOString().slice(0,10)+'">')+F('Preferred time','ಆದ್ಯತೆಯ ಸಮಯ','<input name="time" placeholder="e.g. 11 AM">')+F('Purpose','ಉದ್ದೇಶ','<input name="purpose" data-v="min" data-min="3" maxlength="160">')+F('Details','ವಿವರ','<textarea name="message" rows="4" maxlength="4000"></textarea>')+'<label class="chk"><input type="checkbox" data-v="check"><span>I agree to the <a href="/privacy" target="_blank">privacy policy</a>. / ನಾನು <a href="/privacy" target="_blank">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label><button class="btn main">Request · ಕೋರಿಕೆ ಸಲ್ಲಿಸಿ</button>';form.noValidate=true;V.init(form)}
+  form.onsubmit=async function(e){e.preventDefault();if(!V.check(form))return;if(prof.privacy_version!==PV&&!await consentModal())return;var d=new FormData(form),b=$('button:last-child',form),r;b.disabled=true;
     var base={name:prof.full_name||me.email,phone:prof.phone||null,email:me.email};
     if(kind==='g')r=await sb.from('grievances').insert(Object.assign(base,{category:d.get('category'),subject:d.get('subject'),message:d.get('message')}));
-    else{if(!base.phone){toast('Add your phone number in your profile first. / ಮೊದಲು ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಫೋನ್ ಸೇರಿಸಿ.',1);b.disabled=false;return}
+    else{if(!V.isPhone(base.phone||'')){toast('Add a valid 10-digit mobile number in your profile first. / ಮೊದಲು ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸೇರಿಸಿ.',1);b.disabled=false;return}
       r=await sb.from('appointment_requests').insert(Object.assign(base,{preferred_date:d.get('date')||null,preferred_time:d.get('time')||null,purpose:d.get('purpose'),message:d.get('message')||null}))}
     if(r.error){toast('Could not submit. '+fe(r.error),1);b.disabled=false}else{toast('Submitted! / ಸಲ್ಲಿಸಲಾಗಿದೆ!');dash()}};
   fp.append(tt,form);drawForm();L.append(fp);
   /* profile */
   var pp=panel(),pf=el('form','frm'),h3=el('h3','','Profile · ಪ್ರೊಫೈಲ್');
-  pf.innerHTML=F('Full name','ಪೂರ್ಣ ಹೆಸರು','<input name="n" value="" maxlength="100" required>')+F('Phone','ಫೋನ್','<input name="p" type="tel" maxlength="30">')+F('Area','ಪ್ರದೇಶ','<input name="a" maxlength="160">')+'<button class="btn sm">Save · ಉಳಿಸಿ</button>';
-  pf.n.value=prof.full_name||'';pf.p.value=prof.phone||'';pf.a.value=prof.area||'';
-  pf.onsubmit=async function(e){e.preventDefault();var r=await sb.from('profiles').update({full_name:pf.n.value.trim(),phone:pf.p.value.trim()||null,area:pf.a.value.trim()||null}).eq('id',uid);if(r.error)toast(fe(r.error),1);else{toast('Saved');prof.full_name=pf.n.value;prof.phone=pf.p.value}};
+  pf.innerHTML=F('Full name','ಪೂರ್ಣ ಹೆಸರು','<input name="n" data-v="name" maxlength="100">')+F('Mobile (10 digits)','ಮೊಬೈಲ್ (10 ಅಂಕಿ)','<input name="p" type="tel" data-v="phone" data-opt>')+F('Area','ಪ್ರದೇಶ','<input name="a" maxlength="160">')+'<button class="btn sm">Save · ಉಳಿಸಿ</button>';
+  pf.noValidate=true;V.init(pf);pf.n.value=prof.full_name||'';pf.p.value=prof.phone||'';pf.a.value=prof.area||'';
+  pf.onsubmit=async function(e){e.preventDefault();if(!V.check(pf))return;var r=await sb.from('profiles').update({full_name:pf.n.value.trim(),phone:V.phone(pf.p.value)||null,area:pf.a.value.trim()||null}).eq('id',uid);if(r.error)toast(fe(r.error),1);else{toast('Saved');prof.full_name=pf.n.value;prof.phone=pf.p.value}};
   pp.append(h3,pf);L.append(pp);
   /* history */
   var hp=panel(),hh=el('h3','','My requests · ನನ್ನ ಕೋರಿಕೆಗಳು');hp.append(hh);
@@ -64,6 +69,8 @@ async function dash(){
   V.forEach(function(x){var r=el('div','row'),h=el('h4');h.append(bi(x.events&&x.events.title_en,x.events&&x.events.title_kn));r.append(h);if(x.events&&x.events.starts_at){var m=el('div','meta');m.append(fdate(x.events.starts_at,1));r.append(m)}if(x.ticket_code){var ta=el('a','btn sm main');ta.href='/ticket?c='+x.ticket_code;ta.style.marginTop='8px';ta.append(bi('View ticket','ಟಿಕೆಟ್ ನೋಡಿ'));r.append(ta)}vp.append(r)});
   Rt.append(vp);g.append(L,Rt);app.append(g);
 }
-async function boot(){var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(me&&!recovery)await dash();else auth();hideLoader()}
-sb.auth.onAuthStateChange(function(ev,s){if(ev==='PASSWORD_RECOVERY'){recovery=true;auth();return}if(ev==='SIGNED_IN'&&s&&prof&&prof.id===s.user.id)return;if(ev==='SIGNED_IN'||ev==='SIGNED_OUT'||ev==='TOKEN_REFRESHED'){me=s&&s.user;if(!recovery){if(me&&ev!=='TOKEN_REFRESHED')dash();else if(!me)auth()}}});
+function nextUrl(){var n=new URLSearchParams(location.search).get('next');return n&&/^\/[^\/\\]/.test(n)?n:null}
+function after(){var n=nextUrl();if(n){location.replace(n);return Promise.resolve()}return dash()}
+async function boot(){var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(me&&!recovery)await after();else auth();hideLoader()}
+sb.auth.onAuthStateChange(function(ev,s){if(ev==='PASSWORD_RECOVERY'){recovery=true;auth();return}if(ev==='SIGNED_IN'&&s&&prof&&prof.id===s.user.id)return;if(ev==='SIGNED_IN'||ev==='SIGNED_OUT'||ev==='TOKEN_REFRESHED'){me=s&&s.user;if(!recovery){if(me&&ev!=='TOKEN_REFRESHED')after();else if(!me)auth()}}});
 boot();logVisit();

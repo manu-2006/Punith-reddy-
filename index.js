@@ -1,4 +1,4 @@
-initLang();(function(){for(var i=0;i<3;i++)$('#nw').append(el('div','sk'));$('#ev').append(el('div','sk wide'),el('div','sk wide'))})();
+initLang();V.init(document);(function(){for(var i=0;i<3;i++)$('#nw').append(el('div','sk'));$('#ev').append(el('div','sk wide'),el('div','sk wide'))})();
 var hero=$('.hero');
 if(!matchMedia('(prefers-reduced-motion:reduce)').matches)hero.addEventListener('pointermove',function(e){var r=hero.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;hero.style.setProperty('--mx',(x*100)+'%');hero.style.setProperty('--my',(y*100)+'%');hero.style.setProperty('--px',(x-.5).toFixed(3));hero.style.setProperty('--py',(y-.5).toFixed(3))});
 function count(id,n){var e=document.getElementById(id),t=0,s=Math.max(1,Math.ceil(n/40));(function f(){t=Math.min(n,t+s);e.textContent=t.toLocaleString('en-IN');if(t<n)requestAnimationFrame(f)})()}
@@ -20,6 +20,7 @@ function playVideo(v){var i=vinfo(v),n;
     get('achievements',function(q){return q.order('sort_order')}),get('youth_initiatives',function(q){return q.order('sort_order')}),
     get('service_activities',function(q){return q.order('sort_order')}),
     sb.rpc('supporter_count').then(function(r){return Number(r.data)||0},function(){return 0})]);
+  var CNT={};try{var tcr=await sb.rpc('ticket_counts');(tcr.data||[]).forEach(function(x){CNT[x.event_id]=x})}catch(e){}
   var S=R[0],N=R[1],news=R[2],ev=R[3],gal=R[4],vid=R[5],ach=R[6],yi=R[7],sa=R[8],sup=R[9];
   if(S.hero_image_url&&safe(S.hero_image_url)){var hp=$('#hp');hp.src=S.hero_image_url;hp.hidden=false;$('#hm').hidden=true}
   if(S.hero_description_kn||S.hero_description_en){var d=$('#hdesc');d.replaceChildren(bi(S.hero_description_en,S.hero_description_kn))}
@@ -36,7 +37,7 @@ function playVideo(v){var i=vinfo(v),n;
   var E=$('#ev');up.forEach(function(o){var r=el('div','evt'),d=el('div','d'),m=o.starts_at?new Date(o.starts_at):null,b=el('div'),h=el('h3'),p=el('p'),rs=el('button','btn sm');
     d.append(m?m.getDate():'—');if(m){var s=el('small');s.append(el('span','en',m.toLocaleString('en-IN',{month:'short'})),el('span','kn',m.toLocaleString('kn-IN',{month:'short'})));d.append(s)}
     h.append(B(o,'title'));p.append(B(o,'description'));var meta=el('div','meta');if(o.starts_at)meta.append(fdate(o.starts_at,1));if(o.location)meta.append(' · '+o.location);b.append(meta,h,p);
-    rs.append(bi('RSVP','ನೋಂದಣಿ'));rs.onclick=function(){rsvp(o)};r.append(d,b,rs);E.append(r)});
+    var tc=CNT[o.id],left=tc&&tc.ticket_limit!=null?Math.max(0,tc.ticket_limit-tc.taken):null;if(left===0){rs.append(bi('Sold out','ಮಾರಾಟವಾಗಿದೆ'));rs.disabled=true}else{rs.append(bi('Book ticket','ಟಿಕೆಟ್ ಬುಕ್ ಮಾಡಿ'));rs.onclick=function(){rsvp(o,left)}}if(left!=null&&left>0){meta.append(' · ');meta.append(bi(left+' tickets left',left+' ಟಿಕೆಟ್ ಉಳಿದಿವೆ'))}r.append(d,b,rs);E.append(r)});
   $('#ev-e').hidden=!!up.length;
   /* news */
   news.forEach(function(o){var c=el('button','card'),p=el('div','ph'),b=el('div','bd'),h=el('h3'),d=el('p'),t=el('time');c.style.cssText='all:unset;display:block;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:6px 6px 26px 6px;overflow:hidden';
@@ -57,20 +58,27 @@ function playVideo(v){var i=vinfo(v),n;
   $('#gallery').hidden=!gal.length;
   /* contact info */
   var ci=$('#ci');[['phone','📞'],['email','✉️'],['address','📍']].forEach(function(p){if(S[p[0]]){var d=el('div','',p[1]+' '+S[p[0]]);ci.append(d)}});
-  var soc=el('div');soc.style.marginTop='10px';[['whatsapp','WhatsApp',function(v){return 'https://wa.me/'+String(v).replace(/\D/g,'')}],['instagram_url','Instagram'],['facebook_url','Facebook'],['youtube_url','YouTube'],['x_url','X']].forEach(function(p){var v=S[p[0]];if(!v)return;var u=p[2]?p[2](v):safe(v);if(!u)return;var a=el('a','',p[1]);a.href=u;a.target='_blank';a.rel='noopener';a.style.marginRight='16px';a.style.fontWeight='700';soc.append(a)});ci.append(soc);hideLoader();
+  var soc=el('div');soc.style.marginTop='10px';[['whatsapp','WhatsApp',function(v){var d=String(v).replace(/\D/g,'');return 'https://wa.me/'+(d.length===10?'91'+d:d)}],['instagram_url','Instagram'],['facebook_url','Facebook'],['youtube_url','YouTube'],['x_url','X']].forEach(function(p){var v=S[p[0]];if(!v)return;var u=p[2]?p[2](v):safe(v);if(!u)return;var a=el('a','',p[1]);a.href=u;a.target='_blank';a.rel='noopener';a.style.marginRight='16px';a.style.fontWeight='700';soc.append(a)});ci.append(soc);hideLoader();
 })().catch(function(){hideLoader()});
-function rsvp(o){var w=el('form','frm'),h=el('h3');h.append(B(o,'title'));w.append(h);
-  w.innerHTML+='<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><label class="f"><span>Name / ಹೆಸರು</span><input name="name" required minlength="2" maxlength="100"></label><label class="f"><span>Phone / ಫೋನ್</span><input name="phone" type="tel" required minlength="7" maxlength="30"></label><label class="f"><span>Guests / ಅತಿಥಿಗಳು</span><input name="guests" type="number" min="1" max="20" value="1"></label><button class="btn main" type="submit">Get my ticket · ಟಿಕೆಟ್ ಪಡೆಯಿರಿ</button>';
-  var close=openModal(w);w.onsubmit=async function(e){e.preventDefault();var f=new FormData(w),b=$('button',w);if(f.get('website'))return;busy(b,1);
-    var r=await sb.rpc('rsvp_event',{p_event:o.id,p_name:f.get('name').trim(),p_phone:f.get('phone').trim(),p_guests:Number(f.get('guests'))||1});busy(b,0);
-    if(r.error){toast(r.error.code==='23505'?'You are already registered. Open your Citizen dashboard to see your ticket. / ನೀವು ಈಗಾಗಲೇ ನೋಂದಾಯಿಸಿದ್ದೀರಿ.':fe(r.error),1);return}
-    close();var d=el('div','ask'),a=el('a','btn main');a.href='/ticket?c='+encodeURIComponent(r.data);a.append(bi('View my ticket','ನನ್ನ ಟಿಕೆಟ್ ನೋಡಿ'));
-    d.append(el('div','aic','✓'),el('h3','','You are registered!'),el('p','','Your ticket has a QR code. Save it and show it at the entrance. / ನಿಮ್ಮ ಟಿಕೆಟ್‌ನಲ್ಲಿ QR ಕೋಡ್ ಇದೆ.'),a);openModal(d,'askbox')}}
-$('#sf').onsubmit=async function(e){e.preventDefault();var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;busy(b,1);
-  var r=await sb.from('supporters').insert({name:f.get('name').trim(),phone:f.get('phone').trim(),area:(f.get('area')||'').trim()||null});busy(b,0);
+async function rsvp(o,left){
+  var s=await sb.auth.getSession(),u=s.data.session&&s.data.session.user;
+  if(!u){var go=el('a','btn main'),d=el('div','ask');go.href='/citizen?next='+encodeURIComponent('/#events');go.append(bi('Sign in or create account','ಲಾಗಿನ್ ಅಥವಾ ಖಾತೆ ರಚಿಸಿ'));
+    d.append(el('div','aic','🔒'),el('h3','','Sign in to book your ticket'),el('p','','Tickets are linked to your citizen account, so only you can use them. It takes under a minute. / ಟಿಕೆಟ್‌ಗಳು ನಿಮ್ಮ ನಾಗರಿಕ ಖಾತೆಗೆ ಲಿಂಕ್ ಆಗಿರುತ್ತವೆ.'),go);openModal(d,'askbox');return}
+  var P=await sb.from('profiles').select('full_name,phone').eq('id',u.id).maybeSingle(),pf=P.data||{},max=left?Math.min(left,20):20;
+  var w=el('form','frm'),h=el('h3');w.noValidate=true;h.append(B(o,'title'));w.append(h);
+  w.insertAdjacentHTML('beforeend','<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><label class="f"><span>Name / ಹೆಸರು</span><input name="pname" data-v="name" maxlength="100"></label><label class="f"><span>Mobile (10 digits) / ಮೊಬೈಲ್ (10 ಅಂಕಿ)</span><input name="pphone" data-v="phone" type="tel"></label><label class="f"><span>Guests (max '+max+') / ಅತಿಥಿಗಳು</span><input name="guests" type="number" min="1" max="'+max+'" value="1"></label><label class="chk"><input type="checkbox" name="ok" data-v="check"><span>I agree to the <a href="/privacy" target="_blank">privacy policy</a>. / ನಾನು <a href="/privacy" target="_blank">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label><button class="btn main" type="submit">Book my ticket · ಟಿಕೆಟ್ ಬುಕ್ ಮಾಡಿ</button>');
+  w.elements['pname'].value=V.isName(pf.full_name)?pf.full_name:'';w.elements['pphone'].value=V.isPhone(V.phone(pf.phone))?V.phone(pf.phone):'';V.init(w);
+  var close=openModal(w);w.onsubmit=async function(e){e.preventDefault();if(!V.check(w))return;var f=new FormData(w),b=$('button',w);if(f.get('website'))return;
+    var g=Math.max(1,Math.min(max,Number(f.get('guests'))||1));busy(b,1);
+    var r=await sb.rpc('rsvp_event',{p_event:o.id,p_name:f.get('pname').trim(),p_phone:V.phone(f.get('pphone')),p_guests:g,p_consent:true});busy(b,0);
+    if(r.error){toast(fe(r.error),1);return}
+    close();var d=el('div','ask');d.append(el('div','aic','✓'),el('h3','','Ticket booked!'),el('p','','Opening your ticket… / ನಿಮ್ಮ ಟಿಕೆಟ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ…'));openModal(d,'askbox');
+    setTimeout(function(){location.href='/ticket?c='+encodeURIComponent(r.data)},900)}}
+$('#sf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;busy(b,1);
+  var r=await sb.from('supporters').insert({name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim()||null});busy(b,0);
   if(r.error){toast(r.error.code==='23505'?'You have already joined. Thank you! / ನೀವು ಈಗಾಗಲೇ ಸೇರಿದ್ದೀರಿ. ಧನ್ಯವಾದಗಳು!':fe(r.error),r.error.code!=='23505')}
   else{toast('Welcome to the movement! / ಅಭಿಯಾನಕ್ಕೆ ಸ್ವಾಗತ!');e.target.reset();var n=Number($('#sc2').textContent.replace(/,/g,''))+1;$('#sc2').textContent=n.toLocaleString('en-IN');$('#sc').textContent=n.toLocaleString('en-IN')}};
-$('#cf').onsubmit=async function(e){e.preventDefault();var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;busy(b,1);
-  var r=await sb.from('contact_messages').insert({name:f.get('name').trim(),phone:f.get('phone')||null,email:f.get('email')||null,subject:f.get('subject')||null,message:f.get('message').trim()});busy(b,0);
+$('#cf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;busy(b,1);
+  var r=await sb.from('contact_messages').insert({name:f.get('name').trim(),phone:V.phone(f.get('phone'))||null,email:f.get('email')||null,subject:f.get('subject')||null,message:f.get('message').trim()});busy(b,0);
   if(r.error)toast(fe(r.error),1);else{toast('Message sent. Thank you! / ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.');e.target.reset()}};
 logVisit();
