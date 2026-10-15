@@ -1,0 +1,1 @@
+initLang();sb.from('site_settings').select('email,phone').maybeSingle().then(function(r){var d=r.data;if(d&&(d.email||d.phone))$('#pc').replaceChildren(document.createTextNode([d.email,d.phone].filter(Boolean).join(' · ')));hideLoader()},function(){hideLoader()});

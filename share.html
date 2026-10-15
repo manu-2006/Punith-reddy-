@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Support card | ಬೆಂಬಲ ಕಾರ್ಡ್</title>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Kannada:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+body{background:linear-gradient(165deg,#0E4A36,#03110C);color:var(--on);min-height:100vh}
+.top2{display:flex;justify-content:space-between;align-items:center;padding:20px 0}.top2 a{text-decoration:none;font-weight:700}.top2 .lang button{color:var(--on)}
+.sg{display:grid;grid-template-columns:minmax(0,420px) 1fr;gap:40px;align-items:start;padding:10px 0 70px}@media(max-width:860px){.sg{grid-template-columns:1fr}}
+.pv{width:100%;aspect-ratio:4/5;border-radius:22px;box-shadow:0 40px 80px -30px #000;background:#06201A;display:block}
+.sg h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;margin-bottom:6px}.sg p.l{opacity:.85;margin:0 0 22px}
+.sg input{background:rgba(255,244,226,.96);color:#1F1611}.sg .f{color:var(--on)}
+.th{display:flex;gap:10px;margin:6px 0 20px}.th button{width:46px;height:46px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:transform .2s,border-color .2s}.th button:hover{transform:scale(1.1)}.th button[aria-pressed=true]{border-color:#fff}
+.acts{display:flex;gap:12px;flex-wrap:wrap}.acts .btn:not(.main){color:var(--on)}
+</style>
+</head>
+<body>
+<div id="ldr" class="ldr" aria-live="polite"><div class="ld"><b>PR</b></div><div class="lbar"><i></i></div><p><span class="en">Loading</span><span class="kn">ಲೋಡ್ ಆಗುತ್ತಿದೆ</span></p></div>
+<div class="wrap">
+<div class="top2"><a href="/">← <span class="en">Website</span><span class="kn">ವೆಬ್‌ಸೈಟ್</span></a><div class="lang"><button type="button" data-l="en">EN</button><button type="button" data-l="kn">ಕನ್ನಡ</button></div></div>
+<div class="sg">
+  <canvas id="cv" class="pv" width="1080" height="1350" aria-label="Your support card preview"></canvas>
+  <div>
+    <h1><span class="en">Show your support</span><span class="kn">ನಿಮ್ಮ ಬೆಂಬಲ ತೋರಿಸಿ</span></h1>
+    <p class="l"><span class="en">Make a card with your name, then share it on WhatsApp, Instagram or Facebook.</span><span class="kn">ನಿಮ್ಮ ಹೆಸರಿನೊಂದಿಗೆ ಕಾರ್ಡ್ ಮಾಡಿ, ವಾಟ್ಸಾಪ್, ಇನ್‌ಸ್ಟಾಗ್ರಾಂ ಅಥವಾ ಫೇಸ್‌ಬುಕ್‌ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ.</span></p>
+    <div class="frm">
+      <label class="f"><span class="en">Your name</span><span class="kn">ನಿಮ್ಮ ಹೆಸರು</span><input id="nm" maxlength="40" autocomplete="name"></label>
+      <label class="f"><span class="en">Your area or ward (optional)</span><span class="kn">ನಿಮ್ಮ ಪ್ರದೇಶ ಅಥವಾ ವಾರ್ಡ್ (ಐಚ್ಛಿಕ)</span><input id="wd" maxlength="40"></label>
+      <div class="th" id="th" role="group" aria-label="Colour"></div>
+      <div class="acts"><button class="btn main" id="dl" type="button"><span class="en">Download card</span><span class="kn">ಕಾರ್ಡ್ ಡೌನ್‌ಲೋಡ್</span></button><button class="btn" id="sh" type="button"><span class="en">Share</span><span class="kn">ಹಂಚಿಕೊಳ್ಳಿ</span></button><a class="btn" href="/#join" style="color:var(--on)"><span class="en">Join the movement</span><span class="kn">ಅಭಿಯಾನಕ್ಕೆ ಸೇರಿ</span></a></div>
+    </div>
+  </div>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/lib.js"></script>
+<script src="/share.js"></script>
+</body>
+</html>

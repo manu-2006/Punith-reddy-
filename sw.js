@@ -1,5 +1,5 @@
 var C='pr-admin-v1';
-self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(['/admin','/lib.js','/site.css'])}).then(function(){return self.skipWaiting()}))});
+self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(['/admin','/admin.js','/lib.js','/site.css'])}).then(function(){return self.skipWaiting()}))});
 self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim())});
 self.addEventListener('fetch',function(e){var r=e.request,u=new URL(r.url);if(r.method!=='GET')return;
   if(u.origin===location.origin||u.host==='cdn.jsdelivr.net'||/fonts\.(googleapis|gstatic)\.com$/.test(u.host)){
