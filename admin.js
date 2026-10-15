@@ -160,7 +160,12 @@ async function checkinView(main){
     else if(d.status==='already')show('warn','Already checked in',d.name+' checked in at '+new Date(d.at).toLocaleTimeString());else show('bad','Invalid ticket','This ticket was not found.');loadRecent()}
   go.onclick=function(){if(inp.value.trim()){doIn(inp.value);inp.value=''}};inp.onkeydown=function(e){if(e.key==='Enter')go.onclick()};
   function stopScan(){run=0;cam.hidden=true;scan.textContent='Scan QR with camera';if(vid.srcObject){vid.srcObject.getTracks().forEach(function(t){t.stop()});vid.srcObject=null}}window.__stop=stopScan;
-  function tick(){if(!run)return;if(vid.readyState>=2&&window.jsQR&&vid.videoWidth){cv.width=vid.videoWidth;cv.height=vid.videoHeight;var c=cv.getContext('2d');c.drawImage(vid,0,0);var im=c.getImageData(0,0,cv.width,cv.height),q=jsQR(im.data,im.width,im.height);if(q&&q.data&&(q.data!==last||Date.now()-lastAt>4000)){last=q.data;lastAt=Date.now();doIn(q.data)}}setTimeout(tick,250)}
+  var bd=null;try{if(window.BarcodeDetector)bd=new BarcodeDetector({formats:['qr_code']})}catch(e){}
+  function got(v){if(v&&(v!==last||Date.now()-lastAt>4000)){last=v;lastAt=Date.now();doIn(v)}}
+  function tick(){if(!run)return;if(vid.readyState>=2&&vid.videoWidth){
+    if(bd){bd.detect(vid).then(function(c){if(c&&c[0])got(c[0].rawValue)}).catch(function(){})}
+    else if(window.jsQR){cv.width=vid.videoWidth;cv.height=vid.videoHeight;var c2=cv.getContext('2d');c2.drawImage(vid,0,0);var im=c2.getImageData(0,0,cv.width,cv.height),q=jsQR(im.data,im.width,im.height);if(q&&q.data)got(q.data)}}
+    setTimeout(tick,250)}
   scan.onclick=async function(){if(run){stopScan();return}try{var st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});vid.srcObject=st;await vid.play();cam.hidden=false;run=1;scan.textContent='Stop camera';tick()}catch(e){toast('The camera is not available. You can type the ticket code instead.',1)}};
   loadRecent()}
 /* ---- SMS / WhatsApp alerts ---- */

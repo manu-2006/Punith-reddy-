@@ -8,7 +8,7 @@
 <style>
 body{background:linear-gradient(165deg,#0E4A36,#06201A 40%,var(--bg) 40.1%)}
 @media(prefers-color-scheme:dark){body{background:linear-gradient(165deg,#0E4A36,#06201A 40%,#0F1A15 40.1%)}}
-.hd{color:var(--on);padding:38px 0 36px}.hd h1{font-size:clamp(2rem,5vw,3rem);font-weight:800}.hd a{color:var(--gold)}
+.hd{color:var(--on);padding:38px 0 36px}.hd .lang{border-color:rgba(255,244,226,.75)}.hd .lang button{color:#FFF4E2}.hd .lang button[aria-pressed=true]{background:#FFF4E2;color:#1F1611}.hd h1{font-size:clamp(2rem,5vw,3rem);font-weight:800}.hd a{color:var(--gold)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:8px 8px 30px 8px;padding:28px;box-shadow:0 30px 60px -34px rgba(0,0,0,.5);margin-bottom:22px}
 .auth{max-width:480px;margin:0 auto 60px}.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}.tabs button{font:inherit;font-weight:700;border:0;background:none;color:var(--muted);padding:8px 16px;border-radius:999px;cursor:pointer}.tabs button.on{background:var(--saffron);color:#1F1611}
 .dash{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;padding-bottom:60px}@media(max-width:900px){.dash{grid-template-columns:1fr}}
@@ -21,7 +21,7 @@ body{background:linear-gradient(165deg,#0E4A36,#06201A 40%,var(--bg) 40.1%)}
 <body>
 <div id="ldr" class="ldr" aria-live="polite"><div class="ld"><b>PR</b></div><div class="lbar"><i></i></div><p><span class="en">Loading</span><span class="kn">ಲೋಡ್ ಆಗುತ್ತಿದೆ</span></p></div>
 <div class="tri"></div>
-<div class="wrap hd"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="text-decoration:none;font-weight:700">← <span class="en">Back to website</span><span class="kn">ವೆಬ್‌ಸೈಟ್‌ಗೆ ಹಿಂತಿರುಗಿ</span></a><div class="lang"><button type="button" data-l="en" style="color:var(--on)">EN</button><button type="button" data-l="kn" style="color:var(--on)">ಕನ್ನಡ</button></div></div>
+<div class="wrap hd"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="text-decoration:none;font-weight:700">← <span class="en">Back to website</span><span class="kn">ವೆಬ್‌ಸೈಟ್‌ಗೆ ಹಿಂತಿರುಗಿ</span></a><div class="lang"><button type="button" data-l="en">EN</button><button type="button" data-l="kn">ಕನ್ನಡ</button></div></div>
 <h1 style="margin-top:22px"><span class="en">Citizen portal</span><span class="kn">ನಾಗರಿಕ ಪೋರ್ಟಲ್</span></h1><p style="margin:6px 0 0;opacity:.85"><span class="en">Report issues, request meetings and track every reply.</span><span class="kn">ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ, ಭೇಟಿ ಕೋರಿ ಮತ್ತು ಪ್ರತಿ ಉತ್ತರವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.</span></p></div>
 <main class="wrap" id="app"></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>

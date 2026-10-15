@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/site.css">
 <style>
 body{background:radial-gradient(700px 500px at 80% 0,rgba(255,153,51,.35),transparent 60%),linear-gradient(165deg,#0E4A36,#03110C);min-height:100vh;color:var(--on)}
-.top2{display:flex;justify-content:space-between;align-items:center;padding:20px 0}.top2 a{text-decoration:none;font-weight:700}.top2 .lang button{color:var(--on)}
+.top2{display:flex;justify-content:space-between;align-items:center;padding:20px 0}.top2 a{text-decoration:none;font-weight:700}.top2 .lang{border-color:rgba(255,244,226,.75)}.top2 .lang button{color:#FFF4E2}.top2 .lang button[aria-pressed=true]{background:#FFF4E2;color:#1F1611}
 .tk{width:min(460px,100%);margin:10px auto 22px;color:#1F1611;filter:drop-shadow(0 30px 40px rgba(0,0,0,.45));animation:mpop .6s cubic-bezier(.2,.9,.3,1.1)}
 .tk>div{background:#FFFAF2;position:relative}.tk .hd2{background:linear-gradient(135deg,#0B3B2B,#0E4A36);color:#FFF4E2;padding:0 24px 20px;border-radius:22px 22px 0 0;overflow:hidden}
 .tk .tri{margin:0 -24px 52px}.brand2{display:flex;align-items:center;gap:12px}.brand2 b{display:grid;place-items:center;width:46px;height:46px;border-radius:50% 50% 10px 10px;background:linear-gradient(135deg,#FF9933,#F6C453);color:#1F1611;font-size:1.05rem}
@@ -27,7 +27,7 @@ body{background:radial-gradient(700px 500px at 80% 0,rgba(255,153,51,.35),transp
 <div class="top2"><a href="/">← <span class="en">Website</span><span class="kn">ವೆಬ್‌ಸೈಟ್</span></a><div class="lang"><button type="button" data-l="en">EN</button><button type="button" data-l="kn">ಕನ್ನಡ</button></div></div>
 <div id="app"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="/vendor/qrcode.js"></script>
 <script src="/lib.js"></script>
 <script src="/ticket.js"></script>
 </body>

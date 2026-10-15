@@ -6,7 +6,9 @@ function url(){return location.origin+'/ticket?c='+code}
 function when(l){if(!T.starts_at)return'To be announced';return new Date(T.starts_at).toLocaleString(l==='kn'?'kn-IN':'en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit'})}
 function dd(k,kn,en,knv,full){var d=el('div',full?'full':'');d.append(el('dt','',''),el('dd'));$('dt',d).append(bi(k,kn));$('dd',d).append(typeof en==='string'?bi(en,knv):en);return d}
 function render(){
-  app.replaceChildren();
+  app.replaceChildren();try{draw()}catch(e){plain()}}
+function plain(){app.replaceChildren();var b=el('div','tk'),c=el('div','bd2');c.style.cssText='background:#FFFAF2;border-radius:22px;padding:26px';var h=el('h2');h.append(bi(T.title_en,T.title_kn));c.append(h,el('p','',(T.name||'')+' · '+T.guests+' guest(s)'),el('p','','Ticket code: '+T.code));b.append(c);app.append(b);toast('The QR picture could not be drawn, but your ticket code is shown. Staff can enter it by hand.',1)}
+function draw(){
   if(!T){var n=el('div','nf');n.innerHTML='<h1><span class="en">Ticket not found</span><span class="kn">ಟಿಕೆಟ್ ಸಿಗಲಿಲ್ಲ</span></h1><p><span class="en">Please check the link or QR code, or contact the organisers.</span><span class="kn">ದಯವಿಟ್ಟು ಲಿಂಕ್ ಅಥವಾ QR ಕೋಡ್ ಪರಿಶೀಲಿಸಿ, ಅಥವಾ ಆಯೋಜಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</span></p><a class="btn main" href="/"><span class="en">Back to website</span><span class="kn">ವೆಬ್‌ಸೈಟ್‌ಗೆ</span></a>';app.append(n);return}
   var tk=el('div','tk'),hd=el('div','hd2'),bd=el('div','bd2'),cut=el('div','cut'),qr=el('div','qr2');
   hd.innerHTML='<div class="tri"></div><div class="brand2"><b>PR</b><div><strong><span class="en">Punith Reddy</span><span class="kn">ಪುನೀತ್ ರೆಡ್ಡಿ</span></strong><small><span class="en">'+BR+'</span><span class="kn">'+BRK+'</span></small></div></div><span class="tag2"><span class="en">EVENT TICKET</span><span class="kn">ಟಿಕೆಟ್</span></span>';
@@ -45,5 +47,5 @@ async function png(){
   x.textAlign='center';x.fillStyle='#1F1611';x.font='800 40px '+F;x.fillText(T.code,540,cy+qs+120);x.fillStyle='#6A5D52';x.font='500 26px '+F;x.fillText('Show this QR at the entrance · ಪ್ರವೇಶದ್ವಾರದಲ್ಲಿ ತೋರಿಸಿ',540,1540);x.restore();
   return new Promise(function(res){c.toBlob(res,'image/png')})}
 (async function(){
-  var fail=false;if(code.length===14){var r=await sb.rpc('get_ticket',{p_code:code});if(r.error)fail=true;T=r.data||null}
-  render();if(fail){var rt=el('div','acts'),bt=el('button','btn main');bt.append(bi('Try again','ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ'));bt.onclick=function(){location.reload()};rt.append(bt);app.append(rt);toast("Couldn't load the ticket. Check your connection and try again.",1)}hideLoader();logVisit()})();
+  var fail=false;if(code.length===14){try{var r=await sb.rpc('get_ticket',{p_code:code});if(r.error)fail=true;T=r.data||null}catch(e){fail=true}}
+  try{render()}catch(e){}finally{hideLoader()}if(fail){var rt=el('div','acts'),bt=el('button','btn main');bt.append(bi('Try again','ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ'));bt.onclick=function(){location.reload()};rt.append(bt);app.append(rt);toast("Couldn't load the ticket. Check your connection and try again.",1)}hideLoader();logVisit()})();
