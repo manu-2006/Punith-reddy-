@@ -102,3 +102,29 @@ window.consentBanner=function(){try{if(localStorage.getItem('pp')===PV)return}ca
   ok.onclick=function(){try{localStorage.setItem('pp',PV)}catch(e){}b.remove()};b.append(t,ok);document.body.append(b)};
 var _h=window.hideLoader;window.hideLoader=function(){_h();setTimeout(window.consentBanner,1200)};
 })();
+/* ===== CAPTCHA (Cloudflare Turnstile), edge-function calls and e-mail helpers ===== */
+(function(){
+var key='',loading=null;
+window.CAP={
+  setKey:function(k){key=(k||'').trim()},
+  on:function(){return !!key},
+  load:function(){if(!key)return Promise.resolve(false);if(window.turnstile)return Promise.resolve(true);if(loading)return loading;
+    loading=new Promise(function(res){var s=document.createElement('script');s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';s.async=true;s.onload=function(){res(true)};s.onerror=function(){res(false)};document.head.append(s)});return loading},
+  mount:async function(form){if(!key||!form||form.querySelector('.cf-ts'))return;var ok=await CAP.load();if(!ok||!window.turnstile)return;
+    var d=el('div','cf-ts'),b=form.querySelector('button[type=submit],button:not([type])');d.style.margin='6px 0';form.insertBefore(d,b||null);
+    form.__cap=window.turnstile.render(d,{sitekey:key,theme:'auto',language:'auto'})},
+  token:function(form){return(form&&form.__cap!==undefined&&window.turnstile)?window.turnstile.getResponse(form.__cap):null},
+  ok:function(form){if(!key)return true;if(form&&CAP.token(form))return true;toast('Please complete the security check first. / ಮೊದಲು ಭದ್ರತಾ ಪರಿಶೀಲನೆ ಪೂರ್ಣಗೊಳಿಸಿ.',1);return false},
+  reset:function(form){if(form&&form.__cap!==undefined&&window.turnstile)try{window.turnstile.reset(form.__cap)}catch(e){}},
+  init:async function(){try{var r=await sb.from('site_settings').select('turnstile_site_key').maybeSingle();CAP.setKey(r.data&&r.data.turnstile_site_key)}catch(e){}}
+};
+window.callFn=async function(name,body){var r=await sb.functions.invoke(name,{body:body});
+  if(r.error){var m='Something went wrong. Please try again.',c=null;try{var j=await r.error.context.json();if(j&&j.error)m=j.error;c=j&&j.code}catch(e){}return{error:{message:m,code:c}}}return{data:r.data}};
+window.mail=function(body,wait){var p=sb.functions.invoke('notify',{body:body}).then(function(r){return r},function(){return null});return wait?Promise.race([p,new Promise(function(r){setTimeout(r,2500)})]):p};
+window.resetPw=function(redirect){var f=el('form','frm'),h=el('h3','','Reset your password'),inp=el('input'),go=el('button','btn main'),err=el('small','ferr'),close;
+  f.noValidate=true;inp.type='email';inp.placeholder='you@example.com';inp.dataset.v='email';go.type='submit';go.append('Send reset link');
+  var lab=el('label','f');lab.append(el('span','','Email'),inp);f.append(h,el('p','','Enter your email and we will send you a reset link.'),lab,go);V.init(f);close=openModal(f,'askbox');CAP.mount(f);
+  f.onsubmit=async function(e){e.preventDefault();if(!V.check(f)||!CAP.ok(f))return;busy(go,1);
+    var o={redirectTo:redirect},t=CAP.token(f);if(t)o.captchaToken=t;var r=await sb.auth.resetPasswordForEmail(inp.value.trim(),o);busy(go,0);
+    if(r.error){toast(fe(r.error),1);CAP.reset(f);return}close();toast('If that email has an account, a reset link is on its way.')}};
+})();

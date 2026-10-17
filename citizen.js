@@ -14,13 +14,13 @@ function auth(){
       F('Email','ಇಮೇಲ್','<input name="email" data-v="email" autocomplete="email">')+F('Password','ಪಾಸ್‌ವರ್ಡ್','<input name="pw" type="password" '+(mode==='up'?'data-v="pw"':'required')+' autocomplete="'+(mode==='up'?'new':'current')+'-password">')+
       (mode==='up'?'<label class="chk"><input type="checkbox" data-v="check"><span>I agree to the <a href="/privacy">privacy policy</a>. / ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label>':'')+
       '<button class="btn main">'+(mode==='up'?'Create account · ಖಾತೆ ರಚಿಸಿ':'Sign in · ಲಾಗಿನ್')+'</button>'+(mode==='in'?'<button type="button" class="link" id="fp">Forgot password? · ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?</button>':'');
-    f.onsubmit=async function(e){e.preventDefault();err.textContent='';if(!V.check(f))return;var d=new FormData(f),r;
-      if(mode==='up'){r=await sb.auth.signUp({email:d.get('email'),password:d.get('pw'),options:{data:{full_name:d.get('name').trim(),phone:V.phone(d.get('phone')),area:d.get('area')||'',privacy_version:PV},emailRedirectTo:location.origin+'/citizen'}});
+    f.onsubmit=async function(e){e.preventDefault();err.textContent='';if(!V.check(f)||!CAP.ok(f))return;var d=new FormData(f),r,ct=CAP.token(f)||undefined;
+      if(mode==='up'){r=await sb.auth.signUp({email:d.get('email'),password:d.get('pw'),options:{data:{full_name:d.get('name').trim(),phone:V.phone(d.get('phone')),area:d.get('area')||'',privacy_version:PV},emailRedirectTo:location.origin+'/citizen',captchaToken:ct}});
         if(r.error)err.textContent=fe(r.error);else if(!r.data.session){err.style.color='var(--green2)';err.textContent='Check your email to confirm your account. / ಖಾತೆ ದೃಢೀಕರಿಸಲು ನಿಮ್ಮ ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ.'}}
-      else{if(Date.now()<(window.__lock||0)){err.textContent='Too many attempts. Please wait a minute and try again.';return}r=await sb.auth.signInWithPassword({email:d.get('email').trim(),password:d.get('pw')});if(r.error){window.__fails=(window.__fails||0)+1;if(window.__fails>=5){window.__lock=Date.now()+60000;window.__fails=0}err.textContent=fe(r.error)}else window.__fails=0}};
-    setTimeout(function(){var fp=$('#fp');if(fp)fp.onclick=async function(){var em=await askText('Reset your password','Enter your email and we will send you a reset link.','you@example.com','email');if(!em)return;var r=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+'/citizen'});toast(r.error?fe(r.error):'Reset link sent / ಲಿಂಕ್ ಕಳುಹಿಸಲಾಗಿದೆ',!!r.error)}});
+      else{if(Date.now()<(window.__lock||0)){err.textContent='Too many attempts. Please wait a minute and try again.';return}r=await sb.auth.signInWithPassword({email:d.get('email').trim(),password:d.get('pw'),options:{captchaToken:ct}});if(r.error){CAP.reset(f);window.__fails=(window.__fails||0)+1;if(window.__fails>=5){window.__lock=Date.now()+60000;window.__fails=0}err.textContent=fe(r.error)}else window.__fails=0}};
+    setTimeout(function(){var fp=$('#fp');if(fp)fp.onclick=async function(){resetPw(location.origin+'/citizen')}});
   }
-  V.init(f);p.append(recovery?el('h3','','Set a new password'):t,f,err);box.append(p);app.append(box);
+  V.init(f);if(!recovery)CAP.mount(f);p.append(recovery?el('h3','','Set a new password'):t,f,err);box.append(p);app.append(box);
 }
 function consentModal(){return new Promise(function(res){var d=el('div','ask'),cb=el('input'),lb=el('label','chk'),ok=el('button','btn main'),a=el('a'),sp=el('span'),done=false,close;cb.type='checkbox';
   sp.append(bi('I have read and accept the Privacy Policy','ನಾನು ಗೌಪ್ಯತಾ ನೀತಿಯನ್ನು ಓದಿ ಒಪ್ಪಿದ್ದೇನೆ'));lb.append(cb,sp);a.href='/privacy';a.target='_blank';a.append(bi('Read the privacy policy','ಗೌಪ್ಯತಾ ನೀತಿ ಓದಿ'));ok.append(bi('Accept and continue','ಒಪ್ಪಿ ಮುಂದುವರಿಯಿರಿ'));
@@ -71,6 +71,6 @@ async function dash(){
 }
 function nextUrl(){var n=new URLSearchParams(location.search).get('next');return n&&/^\/[^\/\\]/.test(n)?n:null}
 function after(){var n=nextUrl();if(n){location.replace(n);return Promise.resolve()}return dash()}
-async function boot(){var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(me&&!recovery)await after();else auth();hideLoader()}
+async function boot(){await CAP.init();var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(me&&!recovery)await after();else auth();hideLoader()}
 sb.auth.onAuthStateChange(function(ev,s){if(ev==='PASSWORD_RECOVERY'){recovery=true;auth();return}if(ev==='SIGNED_IN'&&s&&prof&&prof.id===s.user.id)return;if(ev==='SIGNED_IN'||ev==='SIGNED_OUT'||ev==='TOKEN_REFRESHED'){me=s&&s.user;if(!recovery){if(me&&ev!=='TOKEN_REFRESHED')after();else if(!me)auth()}}});
 boot();logVisit();

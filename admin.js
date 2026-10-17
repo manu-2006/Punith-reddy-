@@ -29,7 +29,7 @@ var IN={
 };
 var ALLT=[['dash','Dashboard','admin,editor,moderator'],['inbox','Inbox','admin,moderator'],['checkin','Event check-in','admin,moderator'],['alerts','SMS & WhatsApp','admin,moderator']].concat(Object.keys(M).map(function(k){return[k,M[k].t,'admin,editor']}),[['settings','Settings','admin,editor'],['team','Team & roles','admin'],['audit','Activity log','admin']]);
 var TABS=[];
-var LBL={ticket_limit:'Ticket limit (total guests allowed; leave empty for no limit)',phone:'Mobile number (10 digits)',whatsapp:'WhatsApp number (10 digits)'};
+var LBL={turnstile_site_key:'Cloudflare Turnstile site key (public key, turns on the security check on forms)',ticket_limit:'Ticket limit (total guests allowed; leave empty for no limit)',phone:'Mobile number (10 digits)',whatsapp:'WhatsApp number (10 digits)'};
 function pretty(k){return k.replace(/_(en|kn)$/,'').replace(/_/g,' ')}
 function title(r){return r.title_en||r.title_kn||r.name||r.subject||'(untitled)'}
 /* offline outbox */
@@ -132,17 +132,17 @@ async function inboxView(main){var bar=el('div','sub');Object.keys(IN).forEach(f
     var rw=el('div','row2');
     if(!c.ro){var s=el('select');s.style.width='auto';c.s.forEach(function(o){var op=el('option','',o);op.value=o;s.append(op)});s.value=r.status;rw.append(s);var ta;
       if(c.rep){ta=el('textarea');ta.rows=2;ta.placeholder='Reply visible to the citizen in their dashboard';ta.value=r.public_reply||'';ta.style.marginTop='12px';b.append(ta)}
-      var sv=el('button','b2 main','Save');sv.onclick=async function(){try{var d={status:s.value};if(ta)d.public_reply=ta.value.trim()||null;var ok=await mutate({t:c.tb,m:'update',id:r.id,d:d});toast(ok?'Updated':'Saved offline')}catch(e){toast(fe(e),1)}};rw.append(sv)}
+      var sv=el('button','b2 main','Save');sv.onclick=async function(){try{var d={status:s.value};if(ta)d.public_reply=ta.value.trim()||null;var ok=await mutate({t:c.tb,m:'update',id:r.id,d:d});toast(ok?'Updated':'Saved offline');if(ok&&c.rep)mail({type:'update',table:c.tb,id:r.id})}catch(e){toast(fe(e),1)}};rw.append(sv)}
     var x=el('button','b2 red','Delete');x.onclick=async function(){if(await sure('This entry will be permanently deleted.','Delete this entry?')){try{await mutate({t:c.tb,m:'delete',id:r.id});render()}catch(e){toast(fe(e),1)}}};rw.append(x);b.append(rw);box.append(b)});main.append(box)}
 async function settingsView(main){var r=await sb.from('site_settings').select('*').maybeSingle(),v=Object.assign({},r.data||{id:true}),box=el('div','box');
-  [['hero_tagline','bp'],['hero_description','bpm'],['hero_image_url','img','hero'],['site_name','text'],['phone','text'],['email','text'],['whatsapp','text'],['address','text'],['instagram_url','text'],['facebook_url','text'],['youtube_url','text'],['x_url','text']].forEach(function(f){box.append(field(v,f))});
+  [['hero_tagline','bp'],['hero_description','bpm'],['hero_image_url','img','hero'],['site_name','text'],['phone','text'],['email','text'],['whatsapp','text'],['address','text'],['instagram_url','text'],['facebook_url','text'],['youtube_url','text'],['x_url','text'],['turnstile_site_key','text']].forEach(function(f){box.append(field(v,f))});
   var h=el('p','st','Portrait: upload a transparent PNG (cut-out photo) for the best look in the hero.');box.prepend(h);
-  V.init(box);var sv=el('button','b2 main','Save settings');sv.onclick=async function(){if(!V.check(box))return;try{var d={};['hero_tagline_en','hero_tagline_kn','hero_description_en','hero_description_kn','hero_image_url','site_name','phone','email','whatsapp','address','instagram_url','facebook_url','youtube_url','x_url'].forEach(function(k){var x=v[k];d[k]=x===undefined||x===''?null:x});
+  V.init(box);var sv=el('button','b2 main','Save settings');sv.onclick=async function(){if(!V.check(box))return;try{var d={};['hero_tagline_en','hero_tagline_kn','hero_description_en','hero_description_kn','hero_image_url','site_name','phone','email','whatsapp','address','instagram_url','facebook_url','youtube_url','x_url','turnstile_site_key'].forEach(function(k){var x=v[k];d[k]=x===undefined||x===''?null:x});
     if(!d.hero_tagline_kn&&d.hero_tagline_en&&navigator.onLine)try{d.hero_tagline_kn=await translate(d.hero_tagline_en,'en','kn')}catch(e){}
     if(!d.hero_description_kn&&d.hero_description_en&&navigator.onLine)try{d.hero_description_kn=await translate(d.hero_description_en,'en','kn')}catch(e){}
     if(!d.site_name)delete d.site_name;
     var ok=await mutate({t:'site_settings',m:'update',id:true,d:d});toast(ok?'Settings saved':'Saved offline')}catch(e){toast(fe(e),1)}};
-  var rw=el('div','row2');rw.append(sv);box.append(rw);main.append(box)}
+  var rw=el('div','row2'),te=el('button','b2','Send me a test email');te.onclick=async function(){busy(te,1);var r=await mail({type:'test'},true);busy(te,0);var d=r&&r.data;toast(d&&d.sent?'Test email sent. Check your inbox.':(d&&d.skipped?'The email sender is not connected yet.':(d&&d.failed?'The email provider rejected the message. Check the API key and sender address.':'Could not send the test email.')),!(d&&d.sent))};rw.append(sv,te);box.append(rw);main.append(box)}
 function editorDash(main){var g=el('div','tiles');main.append(g);return Promise.all([['news','News'],['events','Events'],['gallery','Photos'],['videos','Videos']].map(function(t){return sb.from(t[0]).select('*',{count:'exact',head:true}).then(function(r){return[t[1],r.count||0]},function(){return[t[1],'–']})})).then(function(C){C.forEach(function(c){var d=el('div');d.append(el('b','',c[1]),el('span','',c[0]));g.append(d)});var tip=el('div','box');tip.textContent='You have editor access: you can manage website content. Citizen messages and contact details are visible only to admins and moderators.';main.append(tip)})}
 /* ---- event check-in ---- */
 async function checkinView(main){
@@ -212,12 +212,12 @@ async function render(){if(window.__stop)window.__stop();var os=$('.side'),sT=os
 function login(msg){hideLoader();root.replaceChildren();var w=el('div','login'),b=el('div','lbox'),f=el('form','frm'),e=el('div','err',msg||'');
   b.innerHTML='<div class="tri" style="margin:-34px -34px 24px;border-radius:10px 10px 0 0"></div><h1>Admin sign in</h1><p style="margin:0 0 18px;color:var(--muted)">Punith Reddy website</p>';
   f.innerHTML='<label class="f"><span>Email</span><input name="e" type="email" required autocomplete="email"></label><label class="f"><span>Password</span><input name="p" type="password" required autocomplete="current-password"></label><button class="btn main">Sign in</button><button type="button" class="b2" id="fp">Forgot password?</button>';
-  f.onsubmit=async function(ev){ev.preventDefault();e.textContent='';var d=new FormData(f);if(!V.isEmail(String(d.get('e')).trim())){e.textContent='Enter a valid email address.';return}if(Date.now()<(window.__lock||0)){e.textContent='Too many attempts. Please wait a minute and try again.';return}var r=await sb.auth.signInWithPassword({email:String(d.get('e')).trim(),password:d.get('p')});if(r.error){window.__fails=(window.__fails||0)+1;if(window.__fails>=5){window.__lock=Date.now()+60000;window.__fails=0}e.textContent=fe(r.error)}else window.__fails=0};
-  b.append(f,e);w.append(b);root.append(w);$('#fp').onclick=async function(){var em=await askText('Reset your password','Enter your admin email and we will send a reset link.','you@example.com','email');if(!em)return;var r=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+'/admin'});toast(r.error?fe(r.error):'Reset link sent',!!r.error)}}
+  f.onsubmit=async function(ev){ev.preventDefault();e.textContent='';var d=new FormData(f);if(!V.isEmail(String(d.get('e')).trim())){e.textContent='Enter a valid email address.';return}if(Date.now()<(window.__lock||0)){e.textContent='Too many attempts. Please wait a minute and try again.';return}if(!CAP.ok(f))return;var r=await sb.auth.signInWithPassword({email:String(d.get('e')).trim(),password:d.get('p'),options:{captchaToken:CAP.token(f)||undefined}});if(r.error){CAP.reset(f);window.__fails=(window.__fails||0)+1;if(window.__fails>=5){window.__lock=Date.now()+60000;window.__fails=0}e.textContent=fe(r.error)}else window.__fails=0};
+  b.append(f,e);w.append(b);root.append(w);V.init(f);CAP.mount(f);$('#fp').onclick=async function(){resetPw(location.origin+'/admin')}}
 var idleT=null,idleOn=false;
 function idleWatch(){if(idleOn)return;idleOn=true;function bump(){clearTimeout(idleT);idleT=setTimeout(function(){toast('You were signed out after 30 minutes of inactivity.');sb.auth.signOut()},18e5)}
   ['click','keydown','pointermove','touchstart'].forEach(function(e){document.addEventListener(e,bump,{passive:true})});bump()}
-async function boot(){var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(!me){login();return}
+async function boot(){await CAP.init();var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(!me){login();return}
   var role=null;try{var p=await sb.from('profiles').select('role').eq('id',me.id).maybeSingle();role=p.data&&p.data.role;if(role)localStorage.setItem('role:'+me.id,role)}catch(e){}
   if(!role)try{role=localStorage.getItem('role:'+me.id)}catch(e){}
   if(['admin','editor','moderator'].indexOf(role)<0){await sb.auth.signOut();login('This account does not have admin access.');return}

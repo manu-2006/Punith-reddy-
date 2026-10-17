@@ -22,6 +22,7 @@ function playVideo(v){var i=vinfo(v),n;
     sb.rpc('supporter_count').then(function(r){return Number(r.data)||0},function(){return 0})]);
   var CNT={};try{var tcr=await sb.rpc('ticket_counts');(tcr.data||[]).forEach(function(x){CNT[x.event_id]=x})}catch(e){}
   var S=R[0],N=R[1],news=R[2],ev=R[3],gal=R[4],vid=R[5],ach=R[6],yi=R[7],sa=R[8],sup=R[9];
+  CAP.setKey(S.turnstile_site_key);CAP.mount($('#sf'));CAP.mount($('#cf'));
   if(S.hero_image_url&&safe(S.hero_image_url)){var hp=$('#hp');hp.src=S.hero_image_url;hp.hidden=false;$('#hm').hidden=true}
   if(S.hero_description_kn||S.hero_description_en){var d=$('#hdesc');d.replaceChildren(bi(S.hero_description_en,S.hero_description_kn))}
   if(N[0]){var n=el('div','notice '+(N[0].type==='important'?'important':''));n.append(B(N[0],'title'));var x=el('button','','×');x.onclick=function(){n.remove()};n.append(x);$('#notice').append(n)}
@@ -73,12 +74,12 @@ async function rsvp(o,left){
     var r=await sb.rpc('rsvp_event',{p_event:o.id,p_name:f.get('pname').trim(),p_phone:V.phone(f.get('pphone')),p_guests:g,p_consent:true});busy(b,0);
     if(r.error){toast(fe(r.error),1);return}
     close();var d=el('div','ask');d.append(el('div','aic','✓'),el('h3','','Ticket booked!'),el('p','','Opening your ticket… / ನಿಮ್ಮ ಟಿಕೆಟ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ…'));openModal(d,'askbox');
-    setTimeout(function(){location.href='/ticket?c='+encodeURIComponent(r.data)},900)}}
-$('#sf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;busy(b,1);
-  var r=await sb.from('supporters').insert({name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim()||null});busy(b,0);
-  if(r.error){toast(r.error.code==='23505'?'You have already joined. Thank you! / ನೀವು ಈಗಾಗಲೇ ಸೇರಿದ್ದೀರಿ. ಧನ್ಯವಾದಗಳು!':fe(r.error),r.error.code!=='23505')}
+    mail({type:'ticket',code:r.data},true).then(function(){location.href='/ticket?c='+encodeURIComponent(r.data)})}}
+$('#sf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;if(!CAP.ok(e.target))return;busy(b,1);
+  var r=await callFn('public-submit',{kind:'supporter',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim()}});busy(b,0);CAP.reset(e.target);
+  if(r.error){toast(r.error.code==='23505'?'You have already joined. Thank you! / ನೀವು ಈಗಾಗಲೇ ಸೇರಿದ್ದೀರಿ. ಧನ್ಯವಾದಗಳು!':r.error.message,r.error.code!=='23505')}
   else{toast('Welcome to the movement! / ಅಭಿಯಾನಕ್ಕೆ ಸ್ವಾಗತ!');e.target.reset();var n=Number($('#sc2').textContent.replace(/,/g,''))+1;$('#sc2').textContent=n.toLocaleString('en-IN');$('#sc').textContent=n.toLocaleString('en-IN')}};
-$('#cf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;busy(b,1);
-  var r=await sb.from('contact_messages').insert({name:f.get('name').trim(),phone:V.phone(f.get('phone'))||null,email:f.get('email')||null,subject:f.get('subject')||null,message:f.get('message').trim()});busy(b,0);
-  if(r.error)toast(fe(r.error),1);else{toast('Message sent. Thank you! / ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.');e.target.reset()}};
+$('#cf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;if(!CAP.ok(e.target))return;busy(b,1);
+  var r=await callFn('public-submit',{kind:'contact',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),email:(f.get('email')||'').trim(),subject:f.get('subject')||'',message:f.get('message').trim()}});busy(b,0);CAP.reset(e.target);
+  if(r.error)toast(r.error.message,1);else{toast('Message sent. Thank you! / ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.');e.target.reset()}};
 logVisit();
