@@ -7,5 +7,5 @@ self.addEventListener('fetch',function(e){
   var u=new URL(r.url);if(u.origin!==location.origin||u.search)return;
   /* Never cache HTML routes, ticket/card pages, or user-specific responses. */
   if(STATIC.indexOf(u.pathname)<0)return;
-  e.respondWith(caches.open(C).then(function(c){return c.match(r).then(function(hit){var fresh=fetch(r).then(function(x){if(x&&x.ok)c.put(r,x.clone());return x}).catch(function(){return hit});return hit||fresh})}));
+  e.respondWith(caches.open(C).then(function(c){return c.match(r).then(function(hit){return fetch(r).then(function(x){if(x&&x.ok)c.put(r,x.clone());return x}).catch(function(){return hit||Response.error()})})}));
 });
