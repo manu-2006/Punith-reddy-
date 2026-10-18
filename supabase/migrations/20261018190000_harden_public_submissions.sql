@@ -25,6 +25,12 @@ REVOKE INSERT ON TABLE public.contact_messages FROM PUBLIC, anon, authenticated;
 REVOKE INSERT ON TABLE public.grievances FROM PUBLIC, anon, authenticated;
 REVOKE INSERT ON TABLE public.appointment_requests FROM PUBLIC, anon, authenticated;
 
+-- Apply the existing per-name/per-phone submission throttle to contact messages too.
+DROP TRIGGER IF EXISTS throttle_contact_messages ON public.contact_messages;
+CREATE TRIGGER throttle_contact_messages
+BEFORE INSERT ON public.contact_messages
+FOR EACH ROW EXECUTE FUNCTION public.throttle_submissions();
+
 -- Cover foreign keys flagged by the Supabase performance advisor.
 CREATE INDEX IF NOT EXISTS achievements_created_by_fk_idx ON public.achievements (created_by);
 CREATE INDEX IF NOT EXISTS alert_log_sent_by_fk_idx ON public.alert_log (sent_by);
