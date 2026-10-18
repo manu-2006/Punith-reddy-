@@ -47,10 +47,10 @@ async function dash(){
       :F('Preferred date','ಆದ್ಯತೆಯ ದಿನಾಂಕ','<input name="date" type="date" min="'+new Date().toISOString().slice(0,10)+'">')+F('Preferred time','ಆದ್ಯತೆಯ ಸಮಯ','<input name="time" placeholder="e.g. 11 AM">')+F('Purpose','ಉದ್ದೇಶ','<input name="purpose" data-v="min" data-min="3" maxlength="160">')+F('Details','ವಿವರ','<textarea name="message" rows="4" maxlength="4000"></textarea>')+'<label class="chk"><input type="checkbox" data-v="check"><span>I agree to the <a href="/privacy" target="_blank">privacy policy</a>. / ನಾನು <a href="/privacy" target="_blank">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></label><button class="btn main">Request · ಕೋರಿಕೆ ಸಲ್ಲಿಸಿ</button>';form.noValidate=true;V.init(form)}
   form.onsubmit=async function(e){e.preventDefault();if(!V.check(form))return;if(prof.privacy_version!==PV&&!await consentModal())return;var d=new FormData(form),b=$('button:last-child',form),r;b.disabled=true;
     var base={name:prof.full_name||me.email,phone:prof.phone||null,email:me.email};
-    if(kind==='g')r=await sb.from('grievances').insert(Object.assign(base,{category:d.get('category'),subject:d.get('subject'),message:d.get('message')}));
+    if(kind==='g')r=await callFn('public-submit',{kind:'grievance',data:{category:d.get('category'),subject:d.get('subject'),message:d.get('message')}});
     else{if(!V.isPhone(base.phone||'')){toast('Add a valid 10-digit mobile number in your profile first. / ಮೊದಲು ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸೇರಿಸಿ.',1);b.disabled=false;return}
-      r=await sb.from('appointment_requests').insert(Object.assign(base,{preferred_date:d.get('date')||null,preferred_time:d.get('time')||null,purpose:d.get('purpose'),message:d.get('message')||null}))}
-    if(r.error){toast('Could not submit. '+fe(r.error),1);b.disabled=false}else{toast('Submitted! / ಸಲ್ಲಿಸಲಾಗಿದೆ!');dash()}};
+      r=await callFn('public-submit',{kind:'appointment',data:{preferred_date:d.get('date')||null,preferred_time:d.get('time')||null,purpose:d.get('purpose'),message:d.get('message')||null}})}
+    if(r.error){toast('Could not submit. '+(r.error.message||fe(r.error)),1);b.disabled=false}else{toast('Submitted! / ಸಲ್ಲಿಸಲಾಗಿದೆ!');dash()}};
   fp.append(tt,form);drawForm();L.append(fp);
   /* profile */
   var pp=panel(),pf=el('form','frm'),h3=el('h3','','Profile · ಪ್ರೊಫೈಲ್');
