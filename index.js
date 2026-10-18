@@ -98,7 +98,7 @@ async function rsvp(o,left){
     var r=await sb.rpc('rsvp_event',{p_event:o.id,p_name:f.get('pname').trim(),p_phone:V.phone(f.get('pphone')),p_guests:g,p_consent:true});busy(b,0);
     if(r.error){toast(fe(r.error),1);return}
     close();var d=el('div','ask');d.append(el('div','aic','✓'),el('h3','','Ticket booked!'),el('p','','Opening your ticket… / ನಿಮ್ಮ ಟಿಕೆಟ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ…'));openModal(d,'askbox');
-    mail({type:'ticket',code:r.data},true).then(function(){location.href='/ticket?c='+encodeURIComponent(r.data)})}}
+    Promise.resolve().then(function(){return mail({type:'ticket',code:r.data},true)}).catch(function(){}).then(function(){location.href='/ticket?c='+encodeURIComponent(r.data)})}}
 $('#sf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;if(!CAP.ok(e.target))return;busy(b,1);
   var r=await callFn('public-submit',{kind:'supporter',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim(),ref:(function(){try{return localStorage.getItem('ref')||''}catch(e){return ''}})(),leaderboard:!!f.get('lb')}});busy(b,0);CAP.reset(e.target);
   if(r.error){toast(r.error.code==='23505'?'You have already joined. Thank you! / ನೀವು ಈಗಾಗಲೇ ಸೇರಿದ್ದೀರಿ. ಧನ್ಯವಾದಗಳು!':r.error.message,r.error.code!=='23505')}
