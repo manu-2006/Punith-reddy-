@@ -1,3 +1,18 @@
+-- Preserve the explicit owner supplied by the authenticated Edge Function when service-role
+-- inserts run without auth.uid(); ordinary user-triggered inserts still use the JWT user.
+CREATE OR REPLACE FUNCTION public.set_owner()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO ''
+AS $
+BEGIN
+  IF (SELECT auth.uid()) IS NOT NULL THEN
+    NEW.user_id := (SELECT auth.uid());
+  END IF;
+  RETURN NEW;
+END;
+$;
+
 -- Route all public/citizen submissions through the validated Edge Function.
 -- The Edge Function uses the service role only after validation/authentication.
 DROP POLICY IF EXISTS "Anyone can join as supporter" ON public.supporters;
