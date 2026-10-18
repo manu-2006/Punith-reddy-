@@ -27,10 +27,11 @@ function consentModal(){return new Promise(function(res){var d=el('div','ask'),c
   d.append(el('div','aic','🔒'),el('h3','','Privacy policy'),el('p','','Please confirm that you accept our privacy policy to keep using your account. / ನಿಮ್ಮ ಖಾತೆ ಬಳಸಲು ಗೌಪ್ಯತಾ ನೀತಿಗೆ ಒಪ್ಪಿಗೆ ನೀಡಿ.'),a,lb,ok);
   close=openModal(d,'askbox',function(){if(!done){done=true;res(false)}});
   ok.onclick=async function(){if(!cb.checked){toast('Please tick the box to accept.',1);return}busy(ok,1);var r=await sb.from('profiles').update({privacy_version:PV,privacy_accepted_at:new Date().toISOString()}).eq('id',me.id);busy(ok,0);if(r.error){toast(fe(r.error),1);return}prof.privacy_version=PV;done=true;res(true);close()}})}
+function bounded(p,ms,fallback){return Promise.race([Promise.resolve(p),new Promise(function(resolve){setTimeout(function(){resolve({__timeout:true})},ms)})]).then(function(r){return r&&r.__timeout?fallback:r},function(){return fallback})}
 async function dash(){
-  var uid=me.id,P=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();prof=P.data||{};
+  var uid=me.id,P=await bounded(sb.from('profiles').select('*').eq('id',uid).maybeSingle(),7000,{data:null});prof=P.data||{};
   var md=me.user_metadata||{};if(!prof.phone&&md.phone){await sb.from('profiles').update({phone:md.phone,area:md.area||null}).eq('id',uid);prof.phone=md.phone;prof.area=md.area}
-  var R=await Promise.all([sb.from('grievances').select('*').eq('user_id',uid).order('created_at',{ascending:false}),sb.from('appointment_requests').select('*').eq('user_id',uid).order('created_at',{ascending:false}),sb.from('event_rsvps').select('*,events(title_en,title_kn,starts_at)').eq('user_id',uid).order('created_at',{ascending:false})]);
+  var R=await Promise.all([bounded(sb.from('grievances').select('*').eq('user_id',uid).order('created_at',{ascending:false}),7000,{data:[]}),bounded(sb.from('appointment_requests').select('*').eq('user_id',uid).order('created_at',{ascending:false}),7000,{data:[]}),bounded(sb.from('event_rsvps').select('*,events(title_en,title_kn,starts_at)').eq('user_id',uid).order('created_at',{ascending:false}),7000,{data:[]})]);
   var G=R[0].data||[],A=R[1].data||[],V=R[2].data||[];
   app.replaceChildren();
   if(prof.privacy_version!==PV)consentModal();var staff=['admin','editor','moderator'].indexOf(prof.role)>-1;
@@ -71,6 +72,6 @@ async function dash(){
 }
 function nextUrl(){var n=new URLSearchParams(location.search).get('next');return n&&/^\/[^\/\\]/.test(n)?n:null}
 function after(){var n=nextUrl();if(n){location.replace(n);return Promise.resolve()}return dash()}
-async function boot(){await CAP.init();var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(me&&!recovery)await after();else auth();hideLoader()}
+async function boot(){try{await bounded(CAP.init(),5000,false);var s=await bounded(sb.auth.getSession(),7000,{data:{session:null}});me=s.data&&s.data.session&&s.data.session.user;if(me&&!recovery)await bounded(after(),12000,null);else auth()}catch(e){app.replaceChildren();var p=panel(el('h3','','Unable to load your account'),el('p','','Please check your connection and try again.'),el('button','btn main','Retry'));p.lastChild.onclick=function(){boot()};app.append(p)}finally{hideLoader()}}
 sb.auth.onAuthStateChange(function(ev,s){if(ev==='PASSWORD_RECOVERY'){recovery=true;auth();return}if(ev==='SIGNED_IN'&&s&&prof&&prof.id===s.user.id)return;if(ev==='SIGNED_IN'||ev==='SIGNED_OUT'||ev==='TOKEN_REFRESHED'){me=s&&s.user;if(!recovery){if(me&&ev!=='TOKEN_REFRESHED')after();else if(!me)auth()}}});
 boot();logVisit();
