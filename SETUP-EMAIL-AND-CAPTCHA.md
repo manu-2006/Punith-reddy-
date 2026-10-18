@@ -24,6 +24,6 @@ Emails the website now sends by itself: ticket confirmation after booking, and a
 ## B. CAPTCHA with Cloudflare Turnstile
 1. In Cloudflare -> Turnstile, add a widget for your website domain (for example `punith-reddy.vercel.app`) and copy the Site key and the Secret key.
 2. Admin panel -> Settings -> paste the Site key into "Cloudflare Turnstile site key" and save. The security check now appears on the join form, contact form, citizen sign-in and sign-up, admin sign-in and password reset.
-3. Only after step 2 works, add the Secret key in Supabase -> Edge Functions -> Secrets as `TURNSTILE_SECRET_KEY`. From then on the server rejects form submissions without a valid check.
+3. Add the Secret key in Supabase -> Edge Functions -> Secrets as `TURNSTILE_SECRET_KEY`. Public supporter/contact submissions fail closed until this secret is configured and a valid token is verified by the server.
 4. Optional, protects sign-ups and logins directly: Supabase -> Authentication -> Attack Protection -> enable CAPTCHA, choose Turnstile and enter the Secret key.
-5. Tell Claude to lock the direct database inserts. Until that is done a bot could still bypass the forms by calling the database directly.
+5. The production hardening migration removes direct client INSERT access for supporter/contact/grievance/appointment submissions. Submit these through the `public-submit` Edge Function only. Apply the migration only after the updated Edge Function has been deployed and smoke-tested.
