@@ -27,7 +27,7 @@ var IN={
  supporters:{t:'Supporters',tb:'supporters',c:['name','phone','area'],ro:1,rpc:'admin_supporters'},
  rsvps:{t:'Bookings',tb:'event_rsvps',c:['name','phone','guests','ticket_code'],ro:1,rpc:'admin_rsvps'}
 };
-var ALLT=[['dash','Dashboard','admin,editor,moderator'],['inbox','Inbox','admin,moderator'],['checkin','Event check-in','admin,moderator'],['alerts','SMS & WhatsApp','admin,moderator']].concat(Object.keys(M).map(function(k){return[k,M[k].t,'admin,editor']}),[['settings','Settings','admin,editor'],['team','Team & roles','admin'],['audit','Activity log','admin']]);
+var ALLT=[['dash','Dashboard','admin,editor,moderator'],['inbox','Inbox','admin,moderator'],['checkin','Event check-in','admin,moderator'],['referrals','Referrals','admin,moderator'],['alerts','SMS & WhatsApp','admin,moderator']].concat(Object.keys(M).map(function(k){return[k,M[k].t,'admin,editor']}),[['settings','Settings','admin,editor'],['team','Team & roles','admin'],['audit','Activity log','admin']]);
 var TABS=[];
 var LBL={turnstile_site_key:'Cloudflare Turnstile site key (public key, turns on the security check on forms)',ticket_limit:'Ticket limit (total guests allowed; leave empty for no limit)',phone:'Mobile number (10 digits)',whatsapp:'WhatsApp number (10 digits)'};
 function pretty(k){return k.replace(/_(en|kn)$/,'').replace(/_/g,' ')}
@@ -136,7 +136,7 @@ async function inboxView(main){var bar=el('div','sub');Object.keys(IN).forEach(f
     var x=el('button','b2 red','Delete');x.onclick=async function(){if(await sure('This entry will be permanently deleted.','Delete this entry?')){try{await mutate({t:c.tb,m:'delete',id:r.id});render()}catch(e){toast(fe(e),1)}}};rw.append(x);b.append(rw);box.append(b)});main.append(box)}
 async function settingsView(main){var r=await sb.from('site_settings').select('*').maybeSingle(),v=Object.assign({},r.data||{id:true}),box=el('div','box');
   [['hero_tagline','bp'],['hero_description','bpm'],['hero_image_url','img','hero'],['site_name','text'],['phone','text'],['email','text'],['whatsapp','text'],['address','text'],['instagram_url','text'],['facebook_url','text'],['youtube_url','text'],['x_url','text'],['turnstile_site_key','text']].forEach(function(f){box.append(field(v,f))});
-  var h=el('p','st','Portrait: upload a transparent PNG (cut-out photo) for the best look in the hero.');box.prepend(h);
+  var h=el('p','st','Portrait: upload a transparent PNG (cut-out photo) for the best look in the hero. Phone, WhatsApp, email, address and social links below appear in the Contact section of the website, and each one stays hidden until you fill it in.');box.prepend(h);
   V.init(box);var sv=el('button','b2 main','Save settings');sv.onclick=async function(){if(!V.check(box))return;try{var d={};['hero_tagline_en','hero_tagline_kn','hero_description_en','hero_description_kn','hero_image_url','site_name','phone','email','whatsapp','address','instagram_url','facebook_url','youtube_url','x_url','turnstile_site_key'].forEach(function(k){var x=v[k];d[k]=x===undefined||x===''?null:x});
     if(!d.hero_tagline_kn&&d.hero_tagline_en&&navigator.onLine)try{d.hero_tagline_kn=await translate(d.hero_tagline_en,'en','kn')}catch(e){}
     if(!d.hero_description_kn&&d.hero_description_en&&navigator.onLine)try{d.hero_description_kn=await translate(d.hero_description_en,'en','kn')}catch(e){}
@@ -187,6 +187,11 @@ async function alertsView(main){
 async function auditView(main){var R=await sb.from('audit_log').select('*').order('at',{ascending:false}).limit(150),box=el('div','box');
   if(R.error)box.append(el('p','err',fe(R.error)));if(!(R.data||[]).length&&!R.error)box.append(el('p','st','No activity yet.'));
   (R.data||[]).forEach(function(r){var l=el('div','li'),x=el('div');x.append(el('div','tt',r.action+' · '+r.table_name+(r.detail?' · '+r.detail:'')),el('div','sm',(r.actor_email||'system')+' · '+new Date(r.at).toLocaleString()));l.append(x);box.append(l)});main.append(el('p','st','Every change to content, settings and roles is recorded here.'),box)}
+async function referralsView(main){var R=await rpcRows('admin_referrals'),box=el('div','box'),ex=el('button','b2','Export CSV');
+  main.append(el('p','st','Who has brought the most people into the movement. Names and counts only, no phone numbers.'));
+  ex.onclick=function(){var csv=['Name,Referral code,Friends joined,Joined on'].concat(R.d.map(function(r){return ['"'+String(r.name).replace(/"/g,'""')+'"',r.ref_code,r.referrals,r.created_at].join(',')})).join('\n'),a=el('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='referrals.csv';a.click()};
+  main.append(ex);main.lastChild.style.marginBottom='14px';if(R.err)box.append(el('p','err','Could not load: '+fe(R.err)));if(!R.d.length&&!R.err)box.append(el('p','st','No supporters yet.'));
+  R.d.forEach(function(r,i){var l=el('div','li'),x=el('div');x.append(el('div','tt',(i+1)+'. '+r.name),el('div','sm','Code '+r.ref_code+' · joined '+new Date(r.created_at).toLocaleDateString()));l.append(x,el('b','',r.referrals+' friend'+(r.referrals==1?'':'s')));box.append(l)});main.append(box)}
 /* ---- team & roles ---- */
 async function teamView(main){
   var R=await sb.from('profiles').select('id,full_name,email,role').neq('role','citizen').order('created_at'),box=el('div','box'),add=el('div','box'),em=el('input'),rs=el('select'),ad=el('button','btn main sm','Give access');
@@ -208,7 +213,7 @@ async function render(){if(window.__stop)window.__stop();var os=$('.side'),sT=os
   TABS.forEach(function(t){var b=el('button',tab===t[0]?'on':'',t[1]);b.onclick=function(){tab=t[0];render()};side.append(b)});
   side.append(el('div','sp'));var vw=el('button','','View website ↗');vw.onclick=function(){open('/','_blank')};var so=el('button','out','Sign out');so.onclick=function(){sb.auth.signOut()};side.append(vw,so);
   var st=el('span','st');st.id='st';top.append(el('h2','',title_),st);main.append(top);var sh=el('div','shell');sh.append(side,main);root.replaceChildren(sh);statusBar();side.scrollTop=sT;side.scrollLeft=sL;var onb=$('button.on',side);if(onb&&onb.scrollIntoView)onb.scrollIntoView({block:'nearest',inline:'nearest'});
-  if(tab==='dash')await dashView(main);else if(tab==='inbox')await inboxView(main);else if(tab==='settings')await settingsView(main);else if(tab==='checkin')await checkinView(main);else if(tab==='alerts')await alertsView(main);else if(tab==='team')await teamView(main);else if(tab==='audit')await auditView(main);else await listView(tab,main)}
+  if(tab==='dash')await dashView(main);else if(tab==='inbox')await inboxView(main);else if(tab==='settings')await settingsView(main);else if(tab==='checkin')await checkinView(main);else if(tab==='alerts')await alertsView(main);else if(tab==='team')await teamView(main);else if(tab==='referrals')await referralsView(main);else if(tab==='audit')await auditView(main);else await listView(tab,main)}
 function login(msg){hideLoader();root.replaceChildren();var w=el('div','login'),b=el('div','lbox'),f=el('form','frm'),e=el('div','err',msg||'');
   b.innerHTML='<div class="tri" style="margin:-34px -34px 24px;border-radius:10px 10px 0 0"></div><h1>Admin sign in</h1><p style="margin:0 0 18px;color:var(--muted)">Punith Reddy website</p>';
   f.innerHTML='<label class="f"><span>Email</span><input name="e" type="email" required autocomplete="email"></label><label class="f"><span>Password</span><input name="p" type="password" required autocomplete="current-password"></label><button class="btn main">Sign in</button><button type="button" class="b2" id="fp">Forgot password?</button>';

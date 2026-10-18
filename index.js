@@ -1,4 +1,4 @@
-initLang();V.init(document);(function(){for(var i=0;i<3;i++)$('#nw').append(el('div','sk'));$('#ev').append(el('div','sk wide'),el('div','sk wide'))})();
+initLang();(function(){try{var m=(new URLSearchParams(location.search).get('ref')||'').toUpperCase();if(/^[A-Z0-9]{7}$/.test(m))localStorage.setItem('ref',m)}catch(e){}})();V.init(document);(function(){for(var i=0;i<3;i++)$('#nw').append(el('div','sk'));$('#ev').append(el('div','sk wide'),el('div','sk wide'))})();
 var hero=$('.hero');
 if(!matchMedia('(prefers-reduced-motion:reduce)').matches)hero.addEventListener('pointermove',function(e){var r=hero.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;hero.style.setProperty('--mx',(x*100)+'%');hero.style.setProperty('--my',(y*100)+'%');hero.style.setProperty('--px',(x-.5).toFixed(3));hero.style.setProperty('--py',(y-.5).toFixed(3))});
 function count(id,n){var e=document.getElementById(id),t=0,s=Math.max(1,Math.ceil(n/40));(function f(){t=Math.min(n,t+s);e.textContent=t.toLocaleString('en-IN');if(t<n)requestAnimationFrame(f)})()}
@@ -21,8 +21,9 @@ function playVideo(v){var i=vinfo(v),n;
     get('service_activities',function(q){return q.order('sort_order')}),
     sb.rpc('supporter_count').then(function(r){return Number(r.data)||0},function(){return 0})]);
   var CNT={};try{var tcr=await sb.rpc('ticket_counts');(tcr.data||[]).forEach(function(x){CNT[x.event_id]=x})}catch(e){}
+  try{var lr=await sb.rpc('top_referrers',{p_limit:10});var L=lr.data||[];L.forEach(function(x){var li=el('li'),n=el('span','n',x.name),b=el('b','',x.referrals+' ');li.append(n,b);$('#lb').append(li)});$('#leaders').hidden=!L.length}catch(e){}
   var S=R[0],N=R[1],news=R[2],ev=R[3],gal=R[4],vid=R[5],ach=R[6],yi=R[7],sa=R[8],sup=R[9];
-  CAP.setKey(S.turnstile_site_key);CAP.mount($('#sf'));CAP.mount($('#cf'));
+  CAP.setKey(S.turnstile_site_key);CAP.mount($('#sf'));
   if(S.hero_image_url&&safe(S.hero_image_url)){var hp=$('#hp');hp.src=S.hero_image_url;hp.hidden=false;$('#hm').hidden=true}
   if(S.hero_description_kn||S.hero_description_en){var d=$('#hdesc');d.replaceChildren(bi(S.hero_description_en,S.hero_description_kn))}
   if(N[0]){var n=el('div','notice '+(N[0].type==='important'?'important':''));n.append(B(N[0],'title'));var x=el('button','','×');x.onclick=function(){n.remove()};n.append(x);$('#notice').append(n)}
@@ -57,10 +58,33 @@ function playVideo(v){var i=vinfo(v),n;
   /* gallery */
   gal.forEach(function(g){if(!safe(g.image_url))return;var i=el('img');i.src=g.image_url;i.loading='lazy';i.alt=g.alt_en||g.title_en||'';i.onclick=function(){var w=el('div'),im=el('img','full');im.src=g.image_url;im.alt=i.alt;w.append(im);if(g.title_en||g.title_kn){var p=el('p');p.style.textAlign='center';p.append(B(g,'title'));w.append(p)}openModal(w)};$('#gl').append(i)});
   $('#gallery').hidden=!gal.length;
-  /* contact info */
-  var ci=$('#ci');[['phone','📞'],['email','✉️'],['address','📍']].forEach(function(p){if(S[p[0]]){var d=el('div','',p[1]+' '+S[p[0]]);ci.append(d)}});
-  var soc=el('div');soc.style.marginTop='10px';[['whatsapp','WhatsApp',function(v){var d=String(v).replace(/\D/g,'');return 'https://wa.me/'+(d.length===10?'91'+d:d)}],['instagram_url','Instagram'],['facebook_url','Facebook'],['youtube_url','YouTube'],['x_url','X']].forEach(function(p){var v=S[p[0]];if(!v)return;var u=p[2]?p[2](v):safe(v);if(!u)return;var a=el('a','',p[1]);a.href=u;a.target='_blank';a.rel='noopener';a.style.marginRight='16px';a.style.fontWeight='700';soc.append(a)});ci.append(soc);hideLoader();
+  /* contact details (edited in the admin panel, Settings) */
+  var IC={phone:'<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
+    wa:'<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8L4 20z"/><path d="M9 9.5c.3 2 2 3.800 4.500 4.500l1.300-1.300-1.800-1-.8.7c-.8-.4-1.500-1.100-1.900-1.900l.7-.8-1-1.800z"/></svg>',
+    mail:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/></svg>',
+    pin:'<svg viewBox="0 0 24 24"><path d="M12 21s7-6.200 7-11a7 7 0 0 0-14 0c0 4.800 7 11 7 11z"/><circle cx="12" cy="10" r="2.500"/></svg>',
+    ig:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.500" cy="6.500" r=".6"/></svg>',
+    fb:'<svg viewBox="0 0 24 24"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z"/></svg>',
+    yt:'<svg viewBox="0 0 24 24"><rect x="2.500" y="6" width="19" height="12" rx="4"/><path d="M10 9.500v5l4.500-2.500z"/></svg>',
+    x:'<svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg>'};
+  function fmt(v){var d=String(v).replace(/\D/g,'');if(d.length===12&&d.indexOf('91')===0)d=d.slice(2);if(d.length===10)return{show:'+91 '+d.slice(0,5)+' '+d.slice(5),tel:'+91'+d,wa:'91'+d};return{show:String(v),tel:d?'+'+d:'',wa:d}}
+  function cc(ic,en,kn,val,href,ext){var a=el('a','cc'),i=el('i'),d=el('div'),s=el('small');a.href=href;if(ext){a.target='_blank';a.rel='noopener'}i.innerHTML=ic;s.append(bi(en,kn));d.append(s,el('b','',val));a.append(i,d);return a}
+  var cg=$('#cards'),cnt=0;
+  if(S.phone){var p=fmt(S.phone);if(p.tel){cg.append(cc(IC.phone,'Call us','ಕರೆ ಮಾಡಿ',p.show,'tel:'+p.tel));cnt++}}
+  if(S.whatsapp){var w=fmt(S.whatsapp);if(w.wa){cg.append(cc(IC.wa,'WhatsApp','ವಾಟ್ಸಾಪ್',w.show,'https://wa.me/'+w.wa,1));cnt++}}
+  if(S.email&&V.isEmail(String(S.email))){cg.append(cc(IC.mail,'Email','ಇಮೇಲ್',S.email,'mailto:'+S.email));cnt++}
+  if(S.address){cg.append(cc(IC.pin,'Visit us','ಭೇಟಿ ನೀಡಿ',S.address,'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(S.address),1));cnt++}
+  $('#c-e').hidden=cnt>0;
+  var so=[['instagram_url','Instagram',IC.ig],['facebook_url','Facebook',IC.fb],['youtube_url','YouTube',IC.yt],['x_url','X',IC.x]],sc=0;
+  so.forEach(function(q){var u=safe(S[q[0]]);if(!u)return;var a=el('a','sb');a.href=u;a.target='_blank';a.rel='noopener';a.setAttribute('aria-label',q[1]);a.title=q[1];a.innerHTML=q[2];$('#srow').append(a);sc++});
+  $('#csoc').hidden=!sc;hideLoader();
 })().catch(function(){hideLoader()});
+function joined(d){var link=location.origin+'/?ref='+d.ref_code,w=el('div','ask'),card=el('a','btn main'),wa=el('a','btn'),cp=el('button','btn');
+  card.href='/card?c='+encodeURIComponent(d.card_code);card.append(bi('Get my supporter card','ನನ್ನ ಬೆಂಬಲಿಗ ಕಾರ್ಡ್ ಪಡೆಯಿರಿ'));
+  wa.href='https://wa.me/?text='+encodeURIComponent('I joined the movement with Punith Reddy, BJP Yuva Morcha, Bengaluru South District. Join me: '+link);wa.target='_blank';wa.rel='noopener';wa.append(bi('Invite friends on WhatsApp','ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸ್ನೇಹಿತರನ್ನು ಆಹ್ವಾನಿಸಿ'));
+  cp.type='button';cp.append(bi('Copy my link','ನನ್ನ ಲಿಂಕ್ ನಕಲಿಸಿ'));cp.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText(link).then(function(){toast('Link copied')})};
+  var row=el('div','arow');row.style.flexDirection='column';row.append(card,wa,cp);
+  w.append(el('div','aic','✓'),el('h3','','Welcome to the movement!'),el('p','','Save your supporter card now. It cannot be recovered later. Every friend who joins with your link is counted for you. / ನಿಮ್ಮ ಕಾರ್ಡ್ ಈಗಲೇ ಉಳಿಸಿ.'),row);openModal(w,'askbox')}
 async function rsvp(o,left){
   var s=await sb.auth.getSession(),u=s.data.session&&s.data.session.user;
   if(!u){var go=el('a','btn main'),d=el('div','ask');go.href='/citizen?next='+encodeURIComponent('/#events');go.append(bi('Sign in or create account','ಲಾಗಿನ್ ಅಥವಾ ಖಾತೆ ರಚಿಸಿ'));
@@ -76,10 +100,7 @@ async function rsvp(o,left){
     close();var d=el('div','ask');d.append(el('div','aic','✓'),el('h3','','Ticket booked!'),el('p','','Opening your ticket… / ನಿಮ್ಮ ಟಿಕೆಟ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ…'));openModal(d,'askbox');
     mail({type:'ticket',code:r.data},true).then(function(){location.href='/ticket?c='+encodeURIComponent(r.data)})}}
 $('#sf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;if(!CAP.ok(e.target))return;busy(b,1);
-  var r=await callFn('public-submit',{kind:'supporter',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim()}});busy(b,0);CAP.reset(e.target);
+  var r=await callFn('public-submit',{kind:'supporter',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim(),ref:(function(){try{return localStorage.getItem('ref')||''}catch(e){return ''}})(),leaderboard:!!f.get('lb')}});busy(b,0);CAP.reset(e.target);
   if(r.error){toast(r.error.code==='23505'?'You have already joined. Thank you! / ನೀವು ಈಗಾಗಲೇ ಸೇರಿದ್ದೀರಿ. ಧನ್ಯವಾದಗಳು!':r.error.message,r.error.code!=='23505')}
-  else{toast('Welcome to the movement! / ಅಭಿಯಾನಕ್ಕೆ ಸ್ವಾಗತ!');e.target.reset();var n=Number($('#sc2').textContent.replace(/,/g,''))+1;$('#sc2').textContent=n.toLocaleString('en-IN');$('#sc').textContent=n.toLocaleString('en-IN')}};
-$('#cf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;if(!CAP.ok(e.target))return;busy(b,1);
-  var r=await callFn('public-submit',{kind:'contact',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),email:(f.get('email')||'').trim(),subject:f.get('subject')||'',message:f.get('message').trim()}});busy(b,0);CAP.reset(e.target);
-  if(r.error)toast(r.error.message,1);else{toast('Message sent. Thank you! / ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.');e.target.reset()}};
+  else{toast('Welcome to the movement! / ಅಭಿಯಾನಕ್ಕೆ ಸ್ವಾಗತ!');if(r.data&&r.data.card_code)joined(r.data);e.target.reset();var n=Number($('#sc2').textContent.replace(/,/g,''))+1;$('#sc2').textContent=n.toLocaleString('en-IN');$('#sc').textContent=n.toLocaleString('en-IN')}};
 logVisit();

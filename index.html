@@ -69,6 +69,26 @@ html[lang=kn] .name .en,html[lang=en] .name .kn{display:none}
 .c1{right:2%;top:14%}.c2{left:-2%;bottom:auto;top:34%}
 .badge{left:auto;right:-2%;top:46%;width:24%}.badge text{font-size:16px}
 @media(max-width:900px){.badge{display:none}.hshot{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-top:18px}.chipg{position:static;grid-row:1;animation:none;padding:8px 14px}.chipg b{font-size:1.4rem}.c2{grid-column:1}.c1{grid-column:2}.hshot img,.hshot .mono{grid-column:1/-1;grid-row:2}.orb{top:22%}.ring{top:17%}}
+.lb{list-style:none;margin:0;padding:0;max-width:560px;counter-reset:r}
+.lb li{counter-increment:r;display:flex;align-items:center;gap:16px;padding:14px 4px;border-bottom:1px solid var(--line);font-weight:700;font-size:1.15rem}
+.lb li::before{content:counter(r);flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:var(--gold)}
+.lb li:nth-child(1)::before{background:linear-gradient(135deg,#FF9933,#F6C453);color:#1F1611}.lb li span.n{flex:1}.lb li b{color:var(--accent)}
+.chead{margin-bottom:30px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cc{display:flex;gap:16px;align-items:center;padding:20px 22px;border-radius:6px 6px 28px 6px;background:var(--card);border:1px solid var(--line);text-decoration:none;transition:transform .3s,box-shadow .3s,border-color .3s;min-width:0}
+.cc:hover{transform:translateY(-5px);border-color:var(--saffron);box-shadow:0 22px 40px -22px rgba(255,153,51,.7)}
+.cc i{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0E4A36,#0B3B2B);color:#F6C453;transition:transform .3s,background .3s}
+.cc:hover i{background:linear-gradient(135deg,#FF9933,#F6C453);color:#1F1611;transform:rotate(-8deg) scale(1.06)}
+.cc svg,.sb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cc small{display:block;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:.74rem;color:var(--accent)}
+.cc b{display:block;font-size:1.08rem;line-height:1.4;overflow-wrap:anywhere}
+.csoc{margin-top:34px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}.flab{font-weight:700;color:var(--muted)}.srow{display:flex;gap:12px;flex-wrap:wrap}
+.sb{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);color:var(--ink);text-decoration:none;background:var(--card);transition:transform .3s,background .3s,color .3s,border-color .3s}
+.sb:hover{transform:translateY(-5px);background:linear-gradient(135deg,#FF9933,#F6C453);color:#1F1611;border-color:transparent;box-shadow:0 14px 28px -10px rgba(255,153,51,.8)}
+.cta2{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:34px;padding:22px 26px;border-radius:6px 6px 28px 6px;text-decoration:none;color:var(--on);background:linear-gradient(135deg,#0E4A36,#06201A);transition:transform .3s,box-shadow .3s}
+.cta2:hover{transform:translateY(-4px);box-shadow:0 24px 44px -22px rgba(11,59,43,.9)}.cta2 b{display:block;font-size:1.2rem}.cta2 span span,.cta2>div>span{opacity:.85}
+.cta2 em{font-style:normal;font-size:1.8rem;color:var(--gold);transition:transform .3s}.cta2:hover em{transform:translateX(6px)}
+.cc[href^="tel:"] b,.cc[href*="wa.me"] b{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -164,6 +184,12 @@ html[lang=kn] .name .en,html[lang=en] .name .kn{display:none}
   <div class="srv"><a href="/citizen#grievance"><b><span class="en">Report an issue</span><span class="kn">ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ</span></b><span class="en">Roads, water, power and more</span><span class="kn">ರಸ್ತೆ, ನೀರು, ವಿದ್ಯುತ್ ಮತ್ತು ಇನ್ನಷ್ಟು</span></a><a href="/citizen#appointment"><b><span class="en">Request a meeting</span><span class="kn">ಭೇಟಿ ಕೋರಿ</span></b><span class="en">Pick a date and purpose</span><span class="kn">ದಿನಾಂಕ ಮತ್ತು ಉದ್ದೇಶ ಆಯ್ಕೆಮಾಡಿ</span></a><a href="/citizen"><b><span class="en">My dashboard</span><span class="kn">ನನ್ನ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್</span></b><span class="en">Track status and replies</span><span class="kn">ಸ್ಥಿತಿ ಮತ್ತು ಉತ್ತರಗಳನ್ನು ನೋಡಿ</span></a></div>
 </div></section>
 
+<section class="alt" id="leaders" hidden><div class="wrap">
+  <span class="eyebrow"><span class="en">Leaderboard</span><span class="kn">ಅಗ್ರ ಪಟ್ಟಿ</span></span><h2 class="t"><span class="en">Top supporters</span><span class="kn">ಅಗ್ರ ಬೆಂಬಲಿಗರು</span></h2>
+  <p class="lead"><span class="en">People who brought the most friends into the movement.</span><span class="kn">ಹೆಚ್ಚು ಸ್ನೇಹಿತರನ್ನು ಅಭಿಯಾನಕ್ಕೆ ಕರೆತಂದವರು.</span></p>
+  <ol class="lb" id="lb"></ol>
+</div></section>
+
 <section class="deep" id="join"><div class="wrap join">
   <div><span class="eyebrow"><span class="en">Join</span><span class="kn">ಸೇರಿ</span></span><h2 class="t"><span class="en">Be part of what comes next.</span><span class="kn">ಮುಂದಿನ ಹೆಜ್ಜೆಯಲ್ಲಿ ನೀವೂ ಜೊತೆಯಾಗಿ.</span></h2>
     <div class="count" id="sc2">0</div><p class="lead"><span class="en">people have already joined the movement.</span><span class="kn">ಜನರು ಈಗಾಗಲೇ ಅಭಿಯಾನಕ್ಕೆ ಸೇರಿದ್ದಾರೆ.</span></p><a class="btn" href="/share" style="color:var(--on);border-color:rgba(246,196,83,.7)"><span class="en">Create your support card</span><span class="kn">ನಿಮ್ಮ ಬೆಂಬಲ ಕಾರ್ಡ್ ರಚಿಸಿ</span></a></div>
@@ -171,23 +197,20 @@ html[lang=kn] .name .en,html[lang=en] .name .kn{display:none}
     <label class="f"><span class="en">Your name</span><span class="kn">ನಿಮ್ಮ ಹೆಸರು</span><input name="name" data-v="name" maxlength="100" autocomplete="name"></label>
     <label class="f"><span class="en">Mobile number (10 digits)</span><span class="kn">ಮೊಬೈಲ್ ಸಂಖ್ಯೆ (10 ಅಂಕಿ)</span><input name="phone" data-v="phone" type="tel" autocomplete="tel"></label>
     <label class="f"><span class="en">Your area or ward</span><span class="kn">ನಿಮ್ಮ ಪ್ರದೇಶ ಅಥವಾ ವಾರ್ಡ್</span><input name="area" maxlength="160"></label>
+    <label class="chk"><input type="checkbox" name="lb"><span><span class="en">Show my first name on the supporters leaderboard (optional)</span><span class="kn">ಬೆಂಬಲಿಗರ ಪಟ್ಟಿಯಲ್ಲಿ ನನ್ನ ಮೊದಲ ಹೆಸರು ತೋರಿಸಿ (ಐಚ್ಛಿಕ)</span></span></label>
     <label class="chk"><input type="checkbox" name="ok" data-v="check"><span><span class="en">I agree to the <a href="/privacy">privacy policy</a> and to be contacted about this movement.</span><span class="kn">ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಮತ್ತು ಈ ಅಭಿಯಾನದ ಬಗ್ಗೆ ಸಂಪರ್ಕಿಸಲು ಒಪ್ಪುತ್ತೇನೆ.</span></span></label>
     <button class="btn main" type="submit"><span class="en">Join now</span><span class="kn">ಈಗ ಸೇರಿ</span></button>
   </form>
 </div></section>
 
-<section id="contact"><div class="wrap join">
-  <div><span class="eyebrow"><span class="en">Contact</span><span class="kn">ಸಂಪರ್ಕ</span></span><h2 class="t"><span class="en">Write to us</span><span class="kn">ನಮಗೆ ಬರೆಯಿರಿ</span></h2>
-    <div id="ci" class="lead"></div></div>
-  <form class="frm two" id="cf" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <label class="f"><span class="en">Name</span><span class="kn">ಹೆಸರು</span><input name="name" data-v="name" maxlength="100"></label>
-    <label class="f"><span class="en">Mobile (10 digits)</span><span class="kn">ಮೊಬೈಲ್ (10 ಅಂಕಿ)</span><input name="phone" data-v="phone" data-opt type="tel"></label>
-    <label class="f full"><span class="en">Email</span><span class="kn">ಇಮೇಲ್</span><input name="email" data-v="email" data-opt maxlength="254"></label>
-    <label class="f full"><span class="en">Subject</span><span class="kn">ವಿಷಯ</span><input name="subject" maxlength="160"></label>
-    <label class="f full"><span class="en">Message</span><span class="kn">ಸಂದೇಶ</span><textarea name="message" rows="4" data-v="min" data-min="5" maxlength="5000"></textarea></label>
-    <label class="chk full"><input type="checkbox" data-v="check"><span><span class="en">I agree to the <a href="/privacy">privacy policy</a>.</span><span class="kn">ನಾನು <a href="/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a>ಗೆ ಒಪ್ಪುತ್ತೇನೆ.</span></span></label>
-    <button class="btn main full" type="submit"><span class="en">Send message</span><span class="kn">ಸಂದೇಶ ಕಳುಹಿಸಿ</span></button>
-  </form>
+<section id="contact"><div class="wrap">
+  <div class="chead"><span class="eyebrow"><span class="en">Contact</span><span class="kn">ಸಂಪರ್ಕ</span></span>
+    <h2 class="t"><span class="en">Get in touch</span><span class="kn">ಸಂಪರ್ಕಿಸಿ</span></h2>
+    <p class="lead"><span class="en">Call, message or visit. We would love to hear from you.</span><span class="kn">ಕರೆ ಮಾಡಿ, ಸಂದೇಶ ಕಳುಹಿಸಿ ಅಥವಾ ಭೇಟಿ ನೀಡಿ. ನಿಮ್ಮಿಂದ ಕೇಳಲು ನಮಗೆ ಸಂತೋಷ.</span></p></div>
+  <div class="cgrid" id="cards"></div>
+  <p class="empty" id="c-e" hidden><span class="en">Contact details will be added here soon.</span><span class="kn">ಸಂಪರ್ಕ ವಿವರಗಳನ್ನು ಶೀಘ್ರದಲ್ಲೇ ಇಲ್ಲಿ ಸೇರಿಸಲಾಗುವುದು.</span></p>
+  <div class="csoc" id="csoc" hidden><span class="flab"><span class="en">Follow us</span><span class="kn">ನಮ್ಮನ್ನು ಅನುಸರಿಸಿ</span></span><div class="srow" id="srow"></div></div>
+  <a class="cta2" href="/citizen"><div><b><span class="en">Have an issue or need a meeting?</span><span class="kn">ಸಮಸ್ಯೆ ಇದೆಯೇ ಅಥವಾ ಭೇಟಿ ಬೇಕೇ?</span></b><span><span class="en">Use the citizen portal and track every reply.</span><span class="kn">ನಾಗರಿಕ ಪೋರ್ಟಲ್ ಬಳಸಿ ಮತ್ತು ಪ್ರತಿ ಉತ್ತರವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.</span></span></div><em>→</em></a>
 </div></section>
 </main>
 <footer><div class="wrap"><div>© 2026 <span class="en">Punith Reddy · BJP Yuva Morcha, Bengaluru South District</span><span class="kn">ಪುನೀತ್ ರೆಡ್ಡಿ · ಬಿಜೆಪಿ ಯುವ ಮೋರ್ಚಾ, ಬೆಂಗಳೂರು ದಕ್ಷಿಣ ಜಿಲ್ಲೆ</span></div><div><a href="/privacy"><span class="en">Privacy policy</span><span class="kn">ಗೌಪ್ಯತಾ ನೀತಿ</span></a><a href="/citizen"><span class="en">Citizen login</span><span class="kn">ನಾಗರಿಕ ಲಾಗಿನ್</span></a></div></div></footer>
