@@ -2,7 +2,8 @@ initLang();(function(){try{var m=(new URLSearchParams(location.search).get('ref'
 var hero=$('.hero');
 if(!matchMedia('(prefers-reduced-motion:reduce)').matches)hero.addEventListener('pointermove',function(e){var r=hero.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;hero.style.setProperty('--mx',(x*100)+'%');hero.style.setProperty('--my',(y*100)+'%');hero.style.setProperty('--px',(x-.5).toFixed(3));hero.style.setProperty('--py',(y-.5).toFixed(3))});
 function count(id,n){var e=document.getElementById(id),t=0,s=Math.max(1,Math.ceil(n/40));(function f(){t=Math.min(n,t+s);e.textContent=t.toLocaleString('en-IN');if(t<n)requestAnimationFrame(f)})()}
-async function get(t,fn){try{var r=await fn(sb.from(t).select('*').eq('status','published'));return r.data||[]}catch(e){return[]}}
+function bounded(p,ms,fallback){return Promise.race([Promise.resolve(p),new Promise(function(resolve){setTimeout(function(){resolve({__timeout:true})},ms)})]).then(function(r){return r&&r.__timeout?fallback:r},function(){return fallback})}
+async function get(t,fn){return bounded(Promise.resolve().then(function(){return fn(sb.from(t).select('*').eq('status','published'))}).then(function(r){return r.data||[]}),7000,[])}
 function vinfo(v){var u=v.video_url||v.external_url||v.youtube_url||'',k='link',id='',yt=u.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/),ig=u.match(/instagram\.com\/(?:reel|reels|p|tv)\/([\w-]+)/);
   if(v.source_type==='upload'||/^video\//.test(v.mime_type||'')||/\.(mp4|webm|mov)(\?|$)/i.test(u))k='file';else if(yt){k='yt';id=yt[1]}else if(ig){k='ig';id=ig[1]}return{u:u,k:k,id:id}}
 function playVideo(v){var i=vinfo(v),n;
@@ -12,16 +13,16 @@ function playVideo(v){var i=vinfo(v),n;
   else{if(safe(i.u))window.open(i.u,'_blank','noopener');return}
   openModal(n,'wide')}
 (async function(){
-  var R=await Promise.all([sb.from('site_settings').select('*').maybeSingle().then(function(r){return r.data||{}},function(){return{}}),
+  var R=await Promise.all([bounded(sb.from('site_settings').select('*').maybeSingle().then(function(r){return r.data||{}},function(){return{}}),7000,{}),
     get('site_notifications',function(q){return q.order('created_at',{ascending:false}).limit(1)}),
     get('news',function(q){return q.order('published_at',{ascending:false,nullsFirst:false}).limit(9)}),
     get('events',function(q){return q.order('starts_at',{ascending:true})}),
     get('gallery',function(q){return q.order('sort_order')}),get('videos',function(q){return q.order('sort_order')}),
     get('achievements',function(q){return q.order('sort_order')}),get('youth_initiatives',function(q){return q.order('sort_order')}),
     get('service_activities',function(q){return q.order('sort_order')}),
-    sb.rpc('supporter_count').then(function(r){return Number(r.data)||0},function(){return 0})]);
-  var CNT={};try{var tcr=await sb.rpc('ticket_counts');(tcr.data||[]).forEach(function(x){CNT[x.event_id]=x})}catch(e){}
-  try{var lr=await sb.rpc('top_referrers',{p_limit:10});var L=lr.data||[];L.forEach(function(x){var li=el('li'),n=el('span','n',x.name),b=el('b','',x.referrals+' ');li.append(n,b);$('#lb').append(li)});$('#leaders').hidden=!L.length}catch(e){}
+    bounded(sb.rpc('supporter_count').then(function(r){return Number(r.data)||0},function(){return 0}),7000,0)]);
+  var CNT={};try{var tcr=await bounded(sb.rpc('ticket_counts'),5000,{data:[]});(tcr.data||[]).forEach(function(x){CNT[x.event_id]=x})}catch(e){}
+  try{var lr=await bounded(sb.rpc('top_referrers',{p_limit:10}),5000,{data:[]});var L=lr.data||[];L.forEach(function(x){var li=el('li'),n=el('span','n',x.name),b=el('b','',x.referrals+' ');li.append(n,b);$('#lb').append(li)});$('#leaders').hidden=!L.length}catch(e){}
   var S=R[0],N=R[1],news=R[2],ev=R[3],gal=R[4],vid=R[5],ach=R[6],yi=R[7],sa=R[8],sup=R[9];
   CAP.setKey(S.turnstile_site_key);CAP.mount($('#sf'));
   if(S.hero_image_url&&safe(S.hero_image_url)){var hp=$('#hp');hp.src=S.hero_image_url;hp.hidden=false;$('#hm').hidden=true}
@@ -98,7 +99,7 @@ async function rsvp(o,left){
     var r=await sb.rpc('rsvp_event',{p_event:o.id,p_name:f.get('pname').trim(),p_phone:V.phone(f.get('pphone')),p_guests:g,p_consent:true});busy(b,0);
     if(r.error){toast(fe(r.error),1);return}
     close();var d=el('div','ask');d.append(el('div','aic','✓'),el('h3','','Ticket booked!'),el('p','','Opening your ticket… / ನಿಮ್ಮ ಟಿಕೆಟ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ…'));openModal(d,'askbox');
-    mail({type:'ticket',code:r.data},true).then(function(){location.href='/ticket?c='+encodeURIComponent(r.data)})}}
+    Promise.resolve().then(function(){return mail({type:'ticket',code:r.data},true)}).catch(function(){}).then(function(){location.href='/ticket?c='+encodeURIComponent(r.data)})}}
 $('#sf').onsubmit=async function(e){e.preventDefault();if(!V.check(e.target))return;var f=new FormData(e.target),b=$('button',e.target);if(f.get('website'))return;if(!CAP.ok(e.target))return;busy(b,1);
   var r=await callFn('public-submit',{kind:'supporter',token:CAP.token(e.target),data:{name:f.get('name').trim(),phone:V.phone(f.get('phone')),area:(f.get('area')||'').trim(),ref:(function(){try{return localStorage.getItem('ref')||''}catch(e){return ''}})(),leaderboard:!!f.get('lb')}});busy(b,0);CAP.reset(e.target);
   if(r.error){toast(r.error.code==='23505'?'You have already joined. Thank you! / ನೀವು ಈಗಾಗಲೇ ಸೇರಿದ್ದೀರಿ. ಧನ್ಯವಾದಗಳು!':r.error.message,r.error.code!=='23505')}

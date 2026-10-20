@@ -40,11 +40,12 @@ window.logVisit=function(){try{if(sessionStorage.getItem('v:'+location.pathname)
 window.openModal=function(node,cls,onClose){
   var m=el('div','modal'),box=el('div','mbox '+(cls||'')),x=el('button','mx','×'),prev=document.activeElement,closed=false;
   m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');x.type='button';x.setAttribute('aria-label','Close');
+  function focusable(){return Array.from(box.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function(e){return !e.hidden&&e.getAttribute('aria-hidden')!=='true'&&e.getClientRects().length})}
   function close(){if(closed)return;closed=true;m.classList.add('out');setTimeout(function(){m.remove()},200);document.removeEventListener('keydown',k);
     if(!document.querySelector('.modal:not(.out)'))document.body.style.overflow='';if(prev&&prev.focus)try{prev.focus()}catch(e){}if(onClose)onClose()}
-  function k(e){if(e.key==='Escape'){var o=$$('.modal:not(.out)');if(o[o.length-1]===m)close()}}
+  function k(e){var o=$('.modal:not(.out)');if(o[o.length-1]!==m)return;if(e.key==='Escape'){close();return}if(e.key==='Tab'){var f=focusable();if(!f.length){e.preventDefault();x.focus();return}var first=f[0],last=f[f.length-1];if(e.shiftKey&&(document.activeElement===first||!box.contains(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!box.contains(document.activeElement))){e.preventDefault();first.focus()}}}
   x.onclick=close;m.onmousedown=function(e){if(e.target===m)close()};document.addEventListener('keydown',k);
-  box.append(x,node);m.append(box);document.body.append(m);document.body.style.overflow='hidden';return close};
+  box.append(x,node);m.append(box);document.body.append(m);document.body.style.overflow='hidden';setTimeout(function(){var f=focusable();(f[1]||f[0]||x).focus()},0);return close};
 window.toast=function(msg,bad){var h=document.getElementById('toasts');if(!h){h=el('div');h.id='toasts';h.setAttribute('aria-live','polite');document.body.append(h)}
   var t=el('div','toast'+(bad?' bad':''),el('i','ti',bad?'!':'✓'),el('span','tm',msg),el('b','tp'));h.append(t);
   setTimeout(function(){t.classList.add('out');setTimeout(function(){t.remove()},350)},bad?5200:3600)};

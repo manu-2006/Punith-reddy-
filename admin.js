@@ -223,10 +223,11 @@ var idleT=null,idleOn=false;
 function idleWatch(){if(idleOn)return;idleOn=true;function bump(){clearTimeout(idleT);idleT=setTimeout(function(){toast('You were signed out after 30 minutes of inactivity.');sb.auth.signOut()},18e5)}
   ['click','keydown','pointermove','touchstart'].forEach(function(e){document.addEventListener(e,bump,{passive:true})});bump()}
 async function boot(){await CAP.init();var s=await sb.auth.getSession();me=s.data.session&&s.data.session.user;if(!me){login();return}
-  var role=null;try{var p=await sb.from('profiles').select('role').eq('id',me.id).maybeSingle();role=p.data&&p.data.role;if(role)localStorage.setItem('role:'+me.id,role)}catch(e){}
-  if(!role)try{role=localStorage.getItem('role:'+me.id)}catch(e){}
+  /* Authorization must come from the server on every boot. Never trust a cached browser role. */
+  var role=null,p;try{p=await sb.from('profiles').select('role').eq('id',me.id).maybeSingle();if(p.error)throw p.error;role=p.data&&p.data.role}catch(e){await sb.auth.signOut();login('Could not verify your access. Check your connection and try again.');return}
   if(['admin','editor','moderator'].indexOf(role)<0){await sb.auth.signOut();login('This account does not have admin access.');return}
   ROLE=role;TABS=ALLT.filter(function(t){return t[2].indexOf(role)>-1});if(!TABS.some(function(t){return t[0]===tab}))tab=TABS[0][0];OBQ=(await SEC.get('outbox'))||[];
-  render().then(hideLoader);flush();idleWatch()}
-sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_IN'&&!me)boot();if(ev==='SIGNED_OUT'){me=null;SEC.wipe();OBQ=[];login()}if(ev==='PASSWORD_RECOVERY'){askText('Set a new password','Use at least 8 characters.','New password','password').then(function(pw){if(pw)sb.auth.updateUser({password:pw}).then(function(r){toast(r.error?fe(r.error):'Password updated',!!r.error)})})}});
+  render().then(hideLoader).catch(function(){hideLoader();toast('Some admin data could not load. Check your connection and reopen this section.',1)});flush();idleWatch()}
+function askRecoveryPassword(){askText('Set a new password','Use at least 10 characters, including letters and numbers.','New password','password').then(function(pw){if(!pw)return;if(!V.isPw(pw)){toast('Use at least 10 characters, with letters and numbers.',1);askRecoveryPassword();return}sb.auth.updateUser({password:pw}).then(function(r){toast(r.error?fe(r.error):'Password updated',!!r.error)})})}
+sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_IN'&&!me)boot();if(ev==='SIGNED_OUT'){me=null;SEC.wipe();OBQ=[];login()}if(ev==='PASSWORD_RECOVERY')askRecoveryPassword()});
 boot();
